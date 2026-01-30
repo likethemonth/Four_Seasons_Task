@@ -209,7 +209,7 @@ const vipGuests: VIPGuest[] = [
 ];
 
 const tierColors = {
-  ELITE: "bg-[#B8860B] text-black",
+  ELITE: "bg-black text-white",
   PREFERRED: "bg-gray-800 text-white",
   VIP: "bg-gray-600 text-white",
 };
@@ -250,42 +250,42 @@ export default function VIPArrivals() {
             >
               {/* Clickable Header */}
               <div
-                className="p-4 cursor-pointer"
+                className="p-5 cursor-pointer"
                 onClick={() => toggleExpand(guest.id)}
               >
                 {/* Header Row */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-medium text-gray-600">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-[15px] font-semibold text-gray-600">
                       {guest.initials}
                     </div>
                     <div>
-                      <div className="font-medium text-black">{guest.name}</div>
-                      <div className="text-[12px] text-gray-500">
+                      <div className="text-[16px] font-semibold text-black">{guest.name}</div>
+                      <div className="text-[14px] text-gray-500">
                         {guest.stayCount} stays across network
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded-sm px-2 py-1 text-[10px] font-semibold tracking-wide ${tierColors[guest.tier]}`}>
+                    <span className={`rounded-sm px-2.5 py-1 text-[11px] font-semibold tracking-wide ${tierColors[guest.tier]}`}>
                       {guest.tier}
                     </span>
                     {isExpanded ? (
-                      <ChevronUp size={16} className="text-gray-400" />
+                      <ChevronUp size={18} className="text-gray-400" />
                     ) : (
-                      <ChevronDown size={16} className="text-gray-400" />
+                      <ChevronDown size={18} className="text-gray-400" />
                     )}
                   </div>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-3 text-[12px]">
+                <div className="grid grid-cols-2 gap-2 mb-3 text-[14px]">
                   <div className="flex items-center gap-1.5 text-gray-600">
-                    <Clock size={12} />
+                    <Clock size={14} />
                     <span>Arrival: {guest.arrivalTime}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-gray-600">
-                    <MapPin size={12} />
+                    <MapPin size={14} />
                     <span>{guest.room}</span>
                   </div>
                 </div>
@@ -293,11 +293,11 @@ export default function VIPArrivals() {
                 {/* Special Requests */}
                 {guest.specialRequests.length > 0 && (
                   <div className="mb-3">
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {guest.specialRequests.map((request, idx) => (
                         <span
                           key={idx}
-                          className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700"
+                          className="rounded-full bg-amber-50 px-3 py-1 text-[13px] text-amber-700"
                         >
                           {request}
                         </span>
@@ -307,21 +307,21 @@ export default function VIPArrivals() {
                 )}
 
                 {/* Preferences & Alerts */}
-                <div className="flex flex-wrap gap-3 text-[11px]">
+                <div className="flex flex-wrap gap-3 text-[13px]">
                   {guest.preferences.dietary && (
-                    <div className="flex items-center gap-1 text-green-700">
-                      <Utensils size={11} />
+                    <div className="flex items-center gap-1.5 text-green-700">
+                      <Utensils size={14} />
                       {guest.preferences.dietary}
                     </div>
                   )}
                   {guest.preferences.pastComplaints && (
-                    <div className="flex items-center gap-1 text-red-600">
-                      <AlertTriangle size={11} />
+                    <div className="flex items-center gap-1.5 text-red-600">
+                      <AlertTriangle size={14} />
                       {guest.preferences.pastComplaints}
                     </div>
                   )}
-                  <div className="flex items-center gap-1 text-gray-500">
-                    <Heart size={11} />
+                  <div className="flex items-center gap-1.5 text-gray-500">
+                    <Heart size={14} />
                     Avg £{guest.spendHistory.avgPerStay.toLocaleString()}/stay
                   </div>
                 </div>
@@ -329,29 +329,29 @@ export default function VIPArrivals() {
 
               {/* Expanded Guest Profile Section */}
               {isExpanded && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4 space-y-4">
+                <div className="border-t border-gray-200 bg-gray-50 p-5 space-y-5">
                   {/* Service Predictions */}
                   <div>
-                    <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-2">
+                    <div className="text-[12px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
                       Service Predictions
                     </div>
                     <div className="grid grid-cols-1 gap-2">
                       {guest.servicePredictions.map((prediction) => (
                         <div
                           key={prediction.service}
-                          className="flex items-center justify-between bg-white rounded-sm p-2 border border-gray-100"
+                          className="flex items-center justify-between bg-white rounded-sm p-3 border border-gray-100"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-gray-400">{prediction.icon}</span>
-                            <span className="text-[12px] font-medium text-gray-700">
+                            <span className="text-[14px] font-semibold text-gray-700">
                               {prediction.service}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-gray-500">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[13px] text-gray-500">
                               {prediction.detail}
                             </span>
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${usageColors[prediction.usage]}`}>
+                            <span className={`text-[12px] font-semibold px-2 py-0.5 rounded ${usageColors[prediction.usage]}`}>
                               {usageLabels[prediction.usage]}
                             </span>
                           </div>
@@ -363,14 +363,14 @@ export default function VIPArrivals() {
                   {/* Room Preferences */}
                   {guest.preferences.roomPreferences && guest.preferences.roomPreferences.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-2">
+                      <div className="text-[12px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
                         Room Preferences
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {guest.preferences.roomPreferences.map((pref, idx) => (
                           <span
                             key={idx}
-                            className="rounded-full bg-white border border-gray-200 px-2 py-0.5 text-[11px] text-gray-600"
+                            className="rounded-full bg-white border border-gray-200 px-3 py-1 text-[13px] text-gray-600"
                           >
                             {pref}
                           </span>
@@ -381,17 +381,17 @@ export default function VIPArrivals() {
 
                   {/* Staffing Implications */}
                   <div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-2">
-                      <Lightbulb size={12} />
+                    <div className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
+                      <Lightbulb size={14} />
                       Staffing Implications
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {guest.staffingImplications.map((implication, idx) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-2 text-[12px]"
+                          className="flex items-start gap-2 text-[14px]"
                         >
-                          <span className="font-medium text-gray-700 min-w-[100px]">
+                          <span className="font-semibold text-gray-700 min-w-[110px]">
                             {implication.department}:
                           </span>
                           <span className="text-gray-600">{implication.action}</span>

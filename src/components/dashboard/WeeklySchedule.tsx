@@ -101,14 +101,14 @@ export default function WeeklySchedule() {
       <CardHeader title="7-Day Schedule Overview" action="Manage Schedule" />
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 px-5">
+      <div className="flex border-b border-gray-200 px-6">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-4 text-[13px] border-b-2 -mb-px transition-colors ${
+            className={`px-5 py-4 text-[15px] border-b-2 -mb-px transition-colors ${
               activeTab === tab
-                ? "border-[#B8860B] text-black font-medium"
+                ? "border-black text-black font-semibold"
                 : "border-transparent text-gray-600 hover:text-black"
             }`}
           >
@@ -119,15 +119,15 @@ export default function WeeklySchedule() {
 
       <CardBody>
         {/* Week Navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <button className="flex items-center gap-1 text-[13px] text-gray-600 hover:text-black">
-            <ChevronLeft size={16} />
+        <div className="flex items-center justify-between mb-5">
+          <button className="flex items-center gap-1 text-[14px] text-gray-600 hover:text-black">
+            <ChevronLeft size={18} />
             Previous Week
           </button>
-          <span className="text-[14px] font-medium">February 13 - 19, 2026</span>
-          <button className="flex items-center gap-1 text-[13px] text-gray-600 hover:text-black">
+          <span className="text-[16px] font-semibold">February 13 - 19, 2026</span>
+          <button className="flex items-center gap-1 text-[14px] text-gray-600 hover:text-black">
             Next Week
-            <ChevronRight size={16} />
+            <ChevronRight size={18} />
           </button>
         </div>
 
@@ -137,7 +137,7 @@ export default function WeeklySchedule() {
             <button
               key={day.date}
               onClick={() => setSelectedDay(day)}
-              className={`p-4 text-center transition-colors ${
+              className={`p-5 text-center transition-colors ${
                 day.isToday
                   ? "bg-amber-50"
                   : selectedDay?.date === day.date
@@ -145,27 +145,27 @@ export default function WeeklySchedule() {
                   : "bg-white hover:bg-gray-50"
               }`}
             >
-              <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500 mb-1">
+              <div className="text-[12px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
                 {day.dayName}
               </div>
               <div
-                className={`font-display text-[20px] mb-2 ${
-                  day.isToday ? "text-[#B8860B] font-medium" : "text-black"
+                className={`font-display text-[24px] mb-2 ${
+                  day.isToday ? "text-black font-medium" : "text-black"
                 }`}
               >
                 {day.date}
               </div>
-              <div className="text-[11px] text-gray-600 mb-1">
+              <div className="text-[13px] text-gray-600 mb-1">
                 {day.staffCount} staff
               </div>
               <div
-                className={`text-[10px] font-medium ${
+                className={`text-[12px] font-semibold ${
                   day.variance < 0 ? "text-[#2E7D32]" : "text-[#C62828]"
                 }`}
               >
                 {day.variance < 0 ? "" : "+"}£{Math.abs(day.variance).toLocaleString()}
               </div>
-              <div className="mt-2 text-[10px] text-gray-400">
+              <div className="mt-2 text-[12px] text-gray-400">
                 {day.occupancy}% occ
               </div>
             </button>
@@ -174,21 +174,21 @@ export default function WeeklySchedule() {
 
         {/* Selected Day Details */}
         {selectedDay && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-sm">
+          <div className="mt-6 p-5 bg-gray-50 rounded-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="font-medium text-black">
+                <span className="text-[16px] font-semibold text-black">
                   {selectedDay.dayName}, {selectedDay.month} {selectedDay.date}
                 </span>
                 {selectedDay.isToday && (
-                  <span className="ml-2 rounded-full bg-[#B8860B] px-2 py-0.5 text-[10px] font-medium text-black">
+                  <span className="ml-2 rounded-full bg-black px-2.5 py-1 text-[11px] font-semibold text-white">
                     TODAY
                   </span>
                 )}
               </div>
-              <div className="text-[13px]">
+              <div className="text-[15px]">
                 <span className="text-gray-600">Occupancy: </span>
-                <span className="font-medium text-black">{selectedDay.occupancy}%</span>
+                <span className="font-semibold text-black">{selectedDay.occupancy}%</span>
               </div>
             </div>
 
@@ -202,10 +202,10 @@ export default function WeeklySchedule() {
                   concierge: "Concierge",
                 };
                 return (
-                  <div key={dept} className="text-center p-3 bg-white rounded-sm border border-gray-200">
-                    <div className="text-[11px] text-gray-500 mb-1">{labels[dept]}</div>
-                    <div className="font-display text-[20px] text-black">{count}</div>
-                    <div className="text-[10px] text-gray-400">staff</div>
+                  <div key={dept} className="text-center p-4 bg-white rounded-sm border border-gray-200">
+                    <div className="text-[13px] text-gray-500 mb-1">{labels[dept]}</div>
+                    <div className="font-display text-[24px] text-black">{count}</div>
+                    <div className="text-[12px] text-gray-400">staff</div>
                   </div>
                 );
               })}

@@ -67,10 +67,10 @@ export default function Sidebar() {
   const [activeItem, setActiveItem] = useState("/");
 
   return (
-    <nav className="fixed left-0 top-16 bottom-0 w-56 overflow-y-auto border-r border-gray-300 bg-white py-6">
+    <nav className="fixed left-0 top-24 bottom-0 w-60 overflow-y-auto border-r border-gray-300 bg-white py-6">
       {navigation.map((section) => (
         <div key={section.title} className="mb-6">
-          <div className="mb-2 px-5 text-[10px] font-medium uppercase tracking-wider text-gray-500">
+          <div className="mb-3 px-5 text-[12px] font-semibold uppercase tracking-wider text-gray-500">
             {section.title}
           </div>
           {section.items.map((item) => (
@@ -78,9 +78,9 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               onClick={() => setActiveItem(item.href)}
-              className={`flex items-center gap-3 px-5 py-3 text-[13px] transition-all ${
+              className={`flex items-center gap-3 px-5 py-3 text-[15px] transition-all ${
                 activeItem === item.href
-                  ? "border-l-[3px] border-[#B8860B] bg-gray-100 font-medium text-black"
+                  ? "border-l-[3px] border-black bg-gray-100 font-semibold text-black"
                   : "text-gray-700 hover:bg-gray-50 hover:text-black"
               }`}
             >

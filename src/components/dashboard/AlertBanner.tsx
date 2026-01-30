@@ -35,7 +35,7 @@ export default function AlertBanner() {
       {visibleAlerts.map((alert) => (
         <div
           key={alert.id}
-          className={`flex items-center gap-3 rounded-sm border px-5 py-3 ${
+          className={`flex items-center gap-4 rounded-sm border px-6 py-4 ${
             alert.type === "warning"
               ? "border-amber-300 bg-amber-50"
               : alert.type === "error"
@@ -44,7 +44,7 @@ export default function AlertBanner() {
           }`}
         >
           <AlertCircle
-            size={20}
+            size={22}
             className={
               alert.type === "warning"
                 ? "text-amber-600"
@@ -53,11 +53,11 @@ export default function AlertBanner() {
                 : "text-blue-600"
             }
           />
-          <span className="flex-1 text-[13px] text-gray-800">
+          <span className="flex-1 text-[15px] text-gray-800">
             <strong>{alert.title}:</strong> {alert.message}
           </span>
           {alert.action && (
-            <button className="text-[12px] font-medium text-[#B8860B] hover:underline">
+            <button className="text-[14px] font-semibold text-black hover:underline">
               {alert.action}
             </button>
           )}
@@ -65,7 +65,7 @@ export default function AlertBanner() {
             onClick={() => dismissAlert(alert.id)}
             className="text-gray-400 hover:text-gray-600"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
       ))}

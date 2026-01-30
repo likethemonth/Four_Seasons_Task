@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={`${ebGaramond.variable} antialiased`}>
         <Header />
         <Sidebar />
-        <main className="ml-56 mt-16 min-h-[calc(100vh-64px)] p-6">
+        <main className="ml-60 mt-24 min-h-[calc(100vh-96px)] p-8">
           {children}
         </main>
       </body>

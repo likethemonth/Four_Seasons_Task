@@ -30,10 +30,10 @@ export function Card({ children, className = "" }: CardProps) {
 
 export function CardHeader({ title, action }: CardHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-      <h3 className="text-[14px] font-medium text-black">{title}</h3>
+    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+      <h3 className="text-[17px] font-semibold text-black">{title}</h3>
       {action && (
-        <span className="cursor-pointer text-[12px] font-medium text-[#B8860B] hover:underline">
+        <span className="cursor-pointer text-[14px] font-medium text-black hover:underline">
           {action}
         </span>
       )}
@@ -42,7 +42,7 @@ export function CardHeader({ title, action }: CardHeaderProps) {
 }
 
 export function CardBody({ children, className = "" }: CardBodyProps) {
-  return <div className={`p-5 ${className}`}>{children}</div>;
+  return <div className={`p-6 ${className}`}>{children}</div>;
 }
 
 export function CardFooter({ children, className = "" }: CardFooterProps) {

@@ -133,7 +133,7 @@ function ActionBadge({ action }: { action: Department["action"] }) {
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-[11px] font-medium ${styles[action.type]}`}>
+    <span className={`rounded-full px-3 py-1.5 text-[13px] font-semibold ${styles[action.type]}`}>
       {labels[action.type]}
     </span>
   );
@@ -147,19 +147,19 @@ export default function DepartmentDemand() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="px-5 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-[12px] font-semibold uppercase tracking-wider text-gray-500">
                 Department
               </th>
-              <th className="px-5 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-[12px] font-semibold uppercase tracking-wider text-gray-500">
                 Scheduled
               </th>
-              <th className="px-5 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-[12px] font-semibold uppercase tracking-wider text-gray-500">
                 Recommended
               </th>
-              <th className="px-5 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-[12px] font-semibold uppercase tracking-wider text-gray-500">
                 Demand Level
               </th>
-              <th className="px-5 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-4 text-left text-[12px] font-semibold uppercase tracking-wider text-gray-500">
                 Action
               </th>
             </tr>
@@ -167,19 +167,19 @@ export default function DepartmentDemand() {
           <tbody>
             {departments.map((dept) => (
               <tr key={dept.name} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                <td className="px-5 py-4">
-                  <div className="font-medium text-black">{dept.name}</div>
-                  <div className="mt-1 text-[11px] text-gray-500">
+                <td className="px-6 py-5">
+                  <div className="text-[15px] font-semibold text-black">{dept.name}</div>
+                  <div className="mt-1 text-[13px] text-gray-500">
                     Peak: {dept.details.peakHours}
                   </div>
                 </td>
-                <td className="px-5 py-4 font-display text-[18px]">{dept.scheduled}</td>
-                <td className="px-5 py-4 font-display text-[18px]">{dept.recommended}</td>
-                <td className="px-5 py-4">
+                <td className="px-6 py-5 font-display text-[22px]">{dept.scheduled}</td>
+                <td className="px-6 py-5 font-display text-[22px]">{dept.recommended}</td>
+                <td className="px-6 py-5">
                   <DemandBar level={dept.demandLevel} status={dept.demandStatus} />
-                  <div className="mt-1 text-[11px] text-gray-500">{dept.demandLevel}%</div>
+                  <div className="mt-1 text-[13px] text-gray-500">{dept.demandLevel}%</div>
                 </td>
-                <td className="px-5 py-4">
+                <td className="px-6 py-5">
                   <ActionBadge action={dept.action} />
                 </td>
               </tr>
@@ -189,7 +189,7 @@ export default function DepartmentDemand() {
       </CardBody>
       <CardFooter>
         <Button variant="secondary">Export to Fourth</Button>
-        <Button variant="gold">Approve Recommendations</Button>
+        <Button variant="accent">Approve Recommendations</Button>
       </CardFooter>
     </Card>
   );

@@ -119,12 +119,12 @@ export default function CostProjection() {
         {/* Annual Projection */}
         <div className="rounded-sm bg-gray-900 p-4 text-white">
           <div className="flex items-center gap-2 mb-2">
-            <Award size={16} className="text-[#B8860B]" />
+            <Award size={16} className="text-white" />
             <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
               Projected Annual Savings
             </span>
           </div>
-          <div className="font-display text-[28px] text-[#B8860B]">
+          <div className="font-display text-[28px] text-white">
             £2.1M
           </div>
           <div className="text-[12px] text-gray-400 mt-1">

@@ -37,31 +37,31 @@ const summaryData: SummaryCardData[] = [
 
 export default function SummaryCards() {
   return (
-    <div className="grid grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-4 gap-5 mb-6">
       {summaryData.map((card) => (
         <div
           key={card.label}
-          className="rounded-sm border border-gray-300 bg-white p-5"
+          className="rounded-sm border border-gray-300 bg-white p-6"
         >
-          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <div className="mb-2 text-[13px] font-semibold uppercase tracking-wider text-gray-500">
             {card.label}
           </div>
-          <div className="font-display text-[32px] font-normal text-black mb-1">
+          <div className="font-display text-[38px] font-normal text-black mb-1">
             {card.value}
           </div>
           {card.change && (
             <div
-              className={`flex items-center gap-1 text-[12px] ${
+              className={`flex items-center gap-1 text-[14px] ${
                 card.trend === "up" ? "text-[#2E7D32]" : card.trend === "down" ? "text-[#C62828]" : "text-gray-600"
               }`}
             >
-              {card.trend === "up" && <TrendingUp size={12} />}
-              {card.trend === "down" && <TrendingDown size={12} />}
+              {card.trend === "up" && <TrendingUp size={14} />}
+              {card.trend === "down" && <TrendingDown size={14} />}
               {card.change}
             </div>
           )}
           {card.subtext && (
-            <div className="text-[12px] text-gray-600">{card.subtext}</div>
+            <div className="text-[14px] text-gray-600">{card.subtext}</div>
           )}
         </div>
       ))}

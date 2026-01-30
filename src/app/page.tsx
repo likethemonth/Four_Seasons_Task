@@ -11,12 +11,12 @@ export default function Dashboard() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-display text-[28px] font-normal text-black mb-1">
+          <h1 className="font-display text-[34px] font-medium text-black mb-2">
             Daily Demand Overview
           </h1>
-          <p className="text-[13px] text-gray-600">
+          <p className="text-[16px] text-gray-600">
             Guest-informed staffing recommendations for your property
           </p>
         </div>
