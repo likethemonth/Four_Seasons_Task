@@ -13,8 +13,6 @@ const config: Config = {
         fs: {
           black: "#000000",
           white: "#FFFFFF",
-          gold: "#B8860B",
-          "gold-light": "#D4A84B",
           "dark-green": "#1A3D2E",
         },
         // Gray scale

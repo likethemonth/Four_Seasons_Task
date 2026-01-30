@@ -4,8 +4,6 @@
   /* Four Seasons Brand Colors */
   --fs-black: #000000;
   --fs-white: #FFFFFF;
-  --fs-gold: #B8860B;
-  --fs-gold-light: #D4A84B;
   --fs-dark-green: #1A3D2E;
 
   /* Status Colors */
@@ -34,8 +32,6 @@
 @theme inline {
   --color-fs-black: var(--fs-black);
   --color-fs-white: var(--fs-white);
-  --color-fs-gold: var(--fs-gold);
-  --color-fs-gold-light: var(--fs-gold-light);
   --color-fs-dark-green: var(--fs-dark-green);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
