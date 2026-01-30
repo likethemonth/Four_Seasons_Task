@@ -4,7 +4,6 @@ import DepartmentDemand from "@/components/dashboard/DepartmentDemand";
 import GuestIntelligence from "@/components/dashboard/GuestIntelligence";
 import VIPArrivals from "@/components/dashboard/VIPArrivals";
 import CostProjection from "@/components/dashboard/CostProjection";
-import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import DeploymentChart from "@/components/dashboard/DeploymentChart";
 import DateSelector from "@/components/dashboard/DateSelector";
 
@@ -35,11 +34,6 @@ export default function Dashboard() {
         {/* Full Width - Deployment Chart */}
         <div className="col-span-3">
           <DeploymentChart />
-        </div>
-
-        {/* Full Width - Weekly Schedule */}
-        <div className="col-span-3">
-          <WeeklySchedule />
         </div>
 
         {/* Left Column - Department Demand (2 cols) */}
