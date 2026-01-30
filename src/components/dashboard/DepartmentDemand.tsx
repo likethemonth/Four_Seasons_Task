@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import ApproveModal from "./ApproveModal";
 
 interface Department {
   name: string;
@@ -140,6 +142,8 @@ function ActionBadge({ action }: { action: Department["action"] }) {
 }
 
 export default function DepartmentDemand() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <Card>
       <CardHeader title="Department Demand Forecast" action="View Details" />
@@ -189,8 +193,12 @@ export default function DepartmentDemand() {
       </CardBody>
       <CardFooter>
         <Button variant="secondary">Export to Fourth</Button>
-        <Button variant="accent">Approve Recommendations</Button>
+        <Button variant="accent" onClick={() => setIsModalOpen(true)}>
+          Approve Recommendations
+        </Button>
       </CardFooter>
+
+      <ApproveModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </Card>
   );
 }
