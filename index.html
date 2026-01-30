@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Seasons | Labor Optimization</title>
+    <!-- Google Fonts - closest to brand fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Four Seasons Brand Colors */
+            --fs-black: #000000;
+            --fs-white: #FFFFFF;
+            --fs-gold: #B8860B;
+            --fs-gold-light: #D4A84B;
+            --fs-dark-green: #1A3D2E;
+            --fs-gray-100: #F8F9FA;
+            --fs-gray-200: #E9ECEF;
+            --fs-gray-300: #DEE2E6;
+            --fs-gray-400: #CED4DA;
+            --fs-gray-500: #ADB5BD;
+            --fs-gray-600: #6C757D;
+            --fs-gray-700: #495057;
+            --fs-gray-800: #343A40;
+
+            /* Status Colors */
+            --status-success: #2E7D32;
+            --status-warning: #ED6C02;
+            --status-info: #0288D1;
+            --status-high: #C62828;
+
+            /* Typography */
+            --font-display: 'EB Garamond', Georgia, serif;
+            --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--fs-gray-100);
+            color: var(--fs-black);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header / Navigation */
+        .header {
+            background-color: var(--fs-black);
+            color: var(--fs-white);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Four Seasons Tree Logo - CSS Representation */
+        .tree-logo {
+            width: 120px;
+            height: 40px;
+            position: relative;
+        }
+
+        .tree-logo svg {
+            width: 100%;
+            height: 100%;
+            fill: #FFFFFF;
+        }
+
+        .brand-name {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .product-name {
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--fs-gold);
+            text-transform: uppercase;
+            border-left: 1px solid var(--fs-gray-600);
+            padding-left: 16px;
+            margin-left: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .property-selector {
+            background: transparent;
+            border: 1px solid var(--fs-gray-600);
+            color: var(--fs-white);
+            padding: 8px 16px;
+            font-family: var(--font-body);
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--fs-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 12px;
+            color: var(--fs-black);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 220px;
+            background-color: var(--fs-white);
+            border-right: 1px solid var(--fs-gray-300);
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--fs-gray-500);
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--fs-gray-700);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: var(--fs-gray-100);
+            color: var(--fs-black);
+        }
+
+        .nav-item.active {
+            background-color: var(--fs-gray-100);
+            color: var(--fs-black);
+            border-left: 3px solid var(--fs-gold);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 220px;
+            margin-top: 64px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--fs-black);
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--fs-gray-600);
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-nav-btn {
+            background: var(--fs-white);
+            border: 1px solid var(--fs-gray-300);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.15s ease;
+        }
+
+        .date-nav-btn:hover {
+            border-color: var(--fs-black);
+        }
+
+        .date-display {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            background: var(--fs-white);
+            border: 1px solid var(--fs-gray-300);
+            border-radius: 2px;
+        }
+
+        /* Summary Cards Row */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: var(--fs-white);
+            border: 1px solid var(--fs-gray-300);
+            padding: 20px;
+            border-radius: 2px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--fs-gray-500);
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 400;
+            color: var(--fs-black);
+            margin-bottom: 4px;
+        }
+
+        .summary-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .summary-change.positive {
+            color: var(--status-success);
+        }
+
+        .summary-change.negative {
+            color: var(--status-high);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .dashboard-card {
+            background: var(--fs-white);
+            border: 1px solid var(--fs-gray-300);
+            border-radius: 2px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--fs-gray-200);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--fs-black);
+        }
+
+        .card-action {
+            font-size: 12px;
+            color: var(--fs-gold);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .card-action:hover {
+            text-decoration: underline;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Department Demand Table */
+        .department-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .department-table th {
+            text-align: left;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--fs-gray-500);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--fs-gray-200);
+        }
+
+        .department-table td {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--fs-gray-100);
+            vertical-align: middle;
+        }
+
+        .department-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dept-name {
+            font-weight: 500;
+            color: var(--fs-black);
+        }
+
+        .dept-metric {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: var(--fs-black);
+        }
+
+        .demand-bar-container {
+            width: 120px;
+            height: 8px;
+            background-color: var(--fs-gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .demand-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .demand-bar.high {
+            background-color: var(--status-high);
+        }
+
+        .demand-bar.medium {
+            background-color: var(--status-warning);
+        }
+
+        .demand-bar.normal {
+            background-color: var(--status-success);
+        }
+
+        .recommendation-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .recommendation-badge.add {
+            background-color: #E8F5E9;
+            color: var(--status-success);
+        }
+
+        .recommendation-badge.reduce {
+            background-color: #FFF3E0;
+            color: var(--status-warning);
+        }
+
+        .recommendation-badge.standard {
+            background-color: var(--fs-gray-100);
+            color: var(--fs-gray-600);
+        }
+
+        /* Guest Intelligence Panel */
+        .guest-panel {
+            padding: 16px 20px;
+        }
+
+        .guest-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--fs-gray-100);
+        }
+
+        .guest-stat:last-child {
+            border-bottom: none;
+        }
+
+        .guest-stat-label {
+            font-size: 13px;
+            color: var(--fs-gray-700);
+        }
+
+        .guest-stat-value {
+            font-weight: 500;
+            color: var(--fs-black);
+        }
+
+        /* VIP Arrivals */
+        .vip-list {
+            list-style: none;
+        }
+
+        .vip-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--fs-gray-100);
+        }
+
+        .vip-item:last-child {
+            border-bottom: none;
+        }
+
+        .vip-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--fs-gray-200);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--fs-gray-600);
+        }
+
+        .vip-info {
+            flex: 1;
+        }
+
+        .vip-name {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--fs-black);
+            margin-bottom: 2px;
+        }
+
+        .vip-details {
+            font-size: 12px;
+            color: var(--fs-gray-600);
+        }
+
+        .vip-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            background-color: var(--fs-gold);
+            color: var(--fs-black);
+            border-radius: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Schedule Recommendation Panel */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: var(--fs-gray-200);
+            border: 1px solid var(--fs-gray-200);
+            margin-top: 16px;
+        }
+
+        .schedule-day {
+            background-color: var(--fs-white);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .schedule-day-header {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--fs-gray-500);
+            margin-bottom: 8px;
+        }
+
+        .schedule-day-date {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--fs-black);
+            margin-bottom: 8px;
+        }
+
+        .schedule-day.today {
+            background-color: #FFFDF5;
+        }
+
+        .schedule-day.today .schedule-day-date {
+            color: var(--fs-gold);
+            font-weight: 500;
+        }
+
+        .schedule-staff-count {
+            font-size: 11px;
+            color: var(--fs-gray-600);
+        }
+
+        .schedule-variance {
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .schedule-variance.positive {
+            color: var(--status-success);
+        }
+
+        .schedule-variance.negative {
+            color: var(--status-high);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-family: var(--font-body);
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--fs-black);
+            color: var(--fs-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--fs-gray-800);
+        }
+
+        .btn-secondary {
+            background-color: var(--fs-white);
+            color: var(--fs-black);
+            border: 1px solid var(--fs-gray-300);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--fs-black);
+        }
+
+        .btn-gold {
+            background-color: var(--fs-gold);
+            color: var(--fs-black);
+        }
+
+        .btn-gold:hover {
+            background-color: var(--fs-gold-light);
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--fs-gray-200);
+            background-color: var(--fs-gray-100);
+        }
+
+        /* Full Width Card */
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--fs-gray-200);
+            padding: 0 20px;
+        }
+
+        .tab {
+            padding: 16px 20px;
+            font-size: 13px;
+            color: var(--fs-gray-600);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.15s ease;
+        }
+
+        .tab:hover {
+            color: var(--fs-black);
+        }
+
+        .tab.active {
+            color: var(--fs-black);
+            font-weight: 500;
+            border-bottom-color: var(--fs-gold);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background-color: #FFF8E1;
+            border: 1px solid #FFE082;
+            border-radius: 2px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .alert-icon {
+            color: var(--status-warning);
+        }
+
+        .alert-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--fs-gray-800);
+        }
+
+        .alert-action {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--fs-gold);
+            cursor: pointer;
+        }
+
+        /* Cost Projection */
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--fs-gray-100);
+        }
+
+        .cost-row:last-child {
+            border-bottom: none;
+        }
+
+        .cost-label {
+            font-size: 13px;
+            color: var(--fs-gray-700);
+        }
+
+        .cost-value {
+            font-weight: 500;
+            font-family: var(--font-display);
+            font-size: 16px;
+        }
+
+        .cost-savings {
+            color: var(--status-success);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">
+                <div class="tree-logo">
+                    <svg viewBox="34.1 -15.8 265.2 121.8" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(-45.808404,-343.61173)">
+                            <g transform="translate(0.26458345,-0.2645772)">
+                                <path d="M87.5,449h-7.8v-1.2h2.3v-19.5h-2.1v-1.2h13.8c2.9,0,6.9,0.1,6.9,0.1l0,0l0.8,6.8h-1l-0.1-0.3c-1.2-4.2-2.1-5.4-6.6-5.4h-8.1v9.5h4.8c4,0,5.2-0.4,5.2-3v-0.4h1v7.8h-1v-0.4c0-1.9-1.1-2.9-5.2-2.9h-4.8v8.8h1.9L87.5,449"/>
+                                <path d="M114.5,431.7c-5.4,0-8.5,3-8.5,8.4c0,5.3,3,8.3,8.5,8.3c5.5,0,8.5-2.9,8.5-8.3C123,434.8,119.9,431.7,114.5,431.7 M114.5,449.4c-7.9,0-12.2-4.8-12.2-9.3c0-5.9,6.2-9.4,12.2-9.4c7.9,0,12.2,4.9,12.2,9.4C126.7,446.1,120.4,449.4,114.5,449.4"/>
+                                <path d="M139.4,449.4c-4.4,0-9.8-1.6-9.8-9.1v-8.2h-1.8v-1h7.2v1h-2v8.2c0,7,4,8.1,6.4,8.1c3.7,0,7.7-2.1,7.7-8.1v-8.2h-1.8v-1h4.4v1H148v8.2C148,447,143.4,449.4,139.4,449.4"/>
+                                <path d="M156.5,440h6.5c3.1,0,4.5-1.2,4.5-3.9c0-2.7-1.4-3.9-4.5-3.9h-6.5L156.5,440z M163.2,441h-6.7v6.9h1.7v1h-7v-1h2.1v-15.8h-2.1v-1H163c2,0,8.2,0,8.2,5c0,2.3-1.3,3.8-3.7,4.5C167.5,440.6,166.2,441,163.2,441L163.2,441z"/>
+                                <path d="M206.4,429.2l0.5,5.3l-1,0l-0.3-0.9c-1.4-4-4.2-5.7-8.6-5.7c-4.4,0-7,1.2-7,3.3c0,2.3,3.6,3.2,7.5,4.2c4.7,1.2,10.1,2.5,10.1,7c0,4.7-3.6,7.1-10.7,7.1c0,0-5.2-0.2-9.3-1.7l-1.2-6.3h0.9l0.4,1c1.5,3.6,5.1,5.9,9.2,5.9c3.1,0,8.2-0.6,8.2-4.3c0-2.7-3.8-3.6-7.9-4.6c-4.8-1.2-9.7-2.3-9.7-6.6c0-3.9,3.5-6.1,9.5-6.1c1.8,0,2.9,0.2,4.7,0.7C201.8,427.5,204.8,428.3,206.4,429.2"/>
+                                <path d="M229.1,449.2L229.1,449.2c-0.1,0-3.2-0.1-4.9-0.1h-13.4v-1h2v-15.8h-2v-1h13c1.6,0,3.3,0,3.7-0.1l1-0.1l0.6,5l-0.8,0l-0.1-0.3c-1.1-3.3-2.7-3.5-4.4-3.5h-7.7v7h4.3c3.1,0,4.1-0.4,4.1-2.6v-0.4h0.9v6.9h-0.9v-0.4c0-1.7-1-2.4-4.1-2.4h-4.3v7.8h8.2c3,0,3.7-0.9,4.7-3.3l0.1-0.2h1L229.1,449.2"/>
+                                <path d="M237.5,442.1h10.1l-5.1-9.1L237.5,442.1z M249,449v-1h1.9l-2.7-4.9h-11.3l-2.7,4.9h1.9v1h-4.5v-1h1.6l8.8-15.8h-1.6v-1h4.8l0.1,0.2l9.2,16.7h1.8v1L249,449L249,449z"/>
+                                <path d="M290,430.7c-6,0-12.2,3.5-12.2,9.4c0,4.5,4.3,9.3,12.2,9.3c5.9,0,12.2-3.3,12.2-9.3C302.2,435.5,298,430.7,290,430.7 M290,448.4c-5.5,0-8.5-2.9-8.5-8.3c0-5.3,3.1-8.4,8.5-8.4c5.4,0,8.5,3,8.5,8.4C298.6,445.4,295.6,448.4,290,448.4"/>
+                                <polyline points="303.7,431.1 303.7,432.1 305.1,432.1 305.9,432.9 305.9,448 303.8,448 303.8,449 308.8,449 308.8,448 306.9,448 306.9,433.7 323.8,449.7 324,449.9 324,432.1 325.6,432.1 325.6,431.1 321.1,431.1 321.1,432.1 323.1,432.1 323.1,444.6 308.8,431.1 308.8,431.1 303.7,431.1"/>
+                                <path d="M173.3,448.4c-2.7-0.1-3-1.1-3.7-2.5l-2.5-5.4h-3.7l4.6,8.9h5.3L173.3,448.4"/>
+                                <path d="M274.3,432.9l0.4,4.4l-0.8,0l-0.2-0.7c-1.1-3.3-3.4-4.7-7-4.7c-3.6,0-5.7,1-5.7,2.7c0,1.9,3,2.6,6.1,3.4c3.9,1,8.3,2.1,8.3,5.8c0,3.8-2.9,5.8-8.8,5.8c0,0-4.3-0.2-7.6-1.4l-1-5.2h0.7l0.3,0.8c1.2,2.9,4.2,4.9,7.5,4.9c2.5,0,6.7-0.5,6.7-3.5c0-2.2-3.1-2.9-6.5-3.7c-3.9-0.9-7.9-1.9-7.9-5.4c0-3.2,2.8-5,7.8-5c1.5,0,2.4,0.2,3.8,0.6C270.5,431.5,272.9,432.2,274.3,432.9"/>
+                                <path d="M343.9,432.9l0.4,4.4l-0.8,0l-0.2-0.7c-1.1-3.3-3.4-4.7-7-4.7c-3.6,0-5.7,1-5.7,2.7c0,1.9,3,2.6,6.1,3.4c3.9,1,8.3,2.1,8.3,5.8c0,3.8-3,5.8-8.8,5.8c0,0-4.3-0.2-7.6-1.4l-1-5.2h0.7l0.3,0.8c1.2,2.9,4.2,4.9,7.5,4.9c2.5,0,6.7-0.5,6.7-3.5c0-2.2-3.1-2.9-6.5-3.7c-3.9-0.9-7.9-1.9-7.9-5.4c0-3.2,2.8-5,7.8-5c1.5,0,2.4,0.2,3.8,0.6C340,431.5,342.5,432.2,343.9,432.9"/>
+                                <path d="M240.7,379.2c-1.5,0.6-2.5,1.7-2.1,3.7C240.4,382.2,240.9,380.8,240.7,379.2"/>
+                                <path d="M234.6,380.3c0.3,1.6,1.2,2.8,3.1,2.8C237.5,381.2,236.2,380.4,234.6,380.3"/>
+                                <path d="M237.7,388.1c-0.1-1.9-1.4-2.7-3.1-2.8C234.8,386.9,235.6,388.1,237.7,388.1"/>
+                                <path d="M232.1,362.6c-1.6,0.1-2.9,0.9-3.1,2.8C230.9,365.4,231.8,364.2,232.1,362.6"/>
+                                <path d="M224.6,361.1c0.3,1.6,1.2,2.8,3.1,2.8C227.5,362.1,226.3,361.3,224.6,361.1"/>
+                                <path d="M224.2,355.2c1.9,0,2.8-1.2,3.1-2.8C225.7,352.5,224.4,353.3,224.2,355.2"/>
+                                <path d="M225.7,348.1c-1.5,0.7-2.5,1.8-2.1,3.7C225.5,351.1,225.9,349.7,225.7,348.1"/>
+                                <path d="M220.3,349.4c0.1,1.6,0.8,2.9,2.7,3.2C223,350.8,221.9,349.8,220.3,349.4"/>
+                                <path d="M219.5,344.8c1.9,0,2.8-1.2,3.1-2.8C221,342.1,219.8,342.9,219.5,344.8"/>
+                                <path d="M221.2,338.1c-1.4,0.8-2.3,2-1.7,3.9C221.2,341.1,221.6,339.7,221.2,338.1"/>
+                                <path d="M219,343.3c0.1-1.9-1.1-2.9-2.7-3.2C216.4,341.7,217.1,343,219,343.3"/>
+                                <path d="M217.9,346.1c-0.2-1.9-1.5-2.7-3.1-2.8C215.1,344.9,216,346.1,217.9,346.1"/>
+                                <path d="M212.8,349.9c0.6-0.4,6.5-3.8,6.5-3.8c0,0,0,0,0-0.1l-0.3-2.1H219c0,0,0.1,0.9,0.1,1.2c0,0.4-0.1,0.5-0.4,0.7l-6.6,3.4c0,0.5,0,1,0,1.6C212.2,350.5,212.4,350.2,212.8,349.9"/>
+                                <path d="M211.3,331c-0.2-1.9-1.5-2.7-3.1-2.8C208.5,329.8,209.4,331,211.3,331"/>
+                                <path d="M211.3,334.2c-0.2-1.9-1.5-2.7-3.1-2.8C208.5,332.9,209.4,334.1,211.3,334.2"/>
+                                <path d="M211.2,337.3c-0.2-1.9-1.5-2.7-3.1-2.8C208.4,336.1,209.3,337.2,211.2,337.3"/>
+                                <path d="M211.2,340.4c-0.2-1.9-1.5-2.7-3.1-2.8C208.4,339.2,209.3,340.4,211.2,340.4"/>
+                                <path d="M211.1,343.5c-0.2-1.9-1.5-2.7-3.1-2.8C208.3,342.3,209.2,343.5,211.1,343.5"/>
+                                <path d="M211.1,346.7c-0.2-1.9-1.5-2.7-3.1-2.8C208.3,345.5,209.2,346.6,211.1,346.7"/>
+                                <path d="M206.9,339.5c-1.6,0.5-2.6,1.5-2.4,3.5C206.4,342.5,207,341.2,206.9,339.5"/>
+                                <path d="M204.6,345.3c1.9,0,2.8-1.2,3.1-2.8C206.1,342.6,204.8,343.4,204.6,345.3"/>
+                                <path d="M203.8,343.4c0.3-1.9-0.8-3-2.3-3.5C201.4,341.5,202,342.8,203.8,343.4"/>
+                                <path d="M203.4,345.5c-0.2-1.9-1.5-2.7-3.1-2.8C200.6,344.3,201.5,345.5,203.4,345.5"/>
+                                <path d="M208,354.3c-1.6,0.1-2.9,0.9-3.1,2.8C206.8,357.1,207.7,355.9,208,354.3"/>
+                                <path d="M202.6,356c1.9,0,2.8-1.2,3.1-2.8C204.1,353.3,202.8,354.1,202.6,356"/>
+                                <path d="M210.3,355.5c-1.6,0.1-2.9,0.9-3.1,2.8C209.1,358.3,210,357.1,210.3,355.5"/>
+                                <path d="M206.2,352.3c1.9,0,2.8-1.2,3.1-2.8C207.7,349.6,206.4,350.4,206.2,352.3"/>
+                                <path d="M204,351c1.9,0,2.8-1.2,3.1-2.8C205.5,348.3,204.2,349.1,204,351"/>
+                                <path d="M201.8,349.7c1.9,0,2.8-1.2,3.1-2.8C203.3,347,202,347.8,201.8,349.7"/>
+                                <path d="M203.4,351.9c-1.6,0.1-2.9,0.9-3.1,2.8C202.3,354.7,203.1,353.5,203.4,351.9"/>
+                                <path d="M199.7,351.7c0.2-1.9-0.8-3-2.4-3.5C197.3,349.9,197.9,351.2,199.7,351.7"/>
+                                <path d="M199.2,354.6c-0.2-1.9-1.5-2.7-3.1-2.8C196.3,353.4,197.2,354.6,199.2,354.6"/>
+                                <path d="M200.8,364.4c-1.6,0.1-2.9,0.9-3.1,2.8C199.6,367.2,200.5,366.1,200.8,364.4"/>
+                                <path d="M195.5,366c1.9,0,2.8-1.2,3.1-2.8C196.9,363.3,195.7,364.1,195.5,366"/>
+                                <path d="M203.1,365.6c-1.6,0.1-2.9,0.9-3.1,2.8C201.9,368.4,202.8,367.3,203.1,365.6"/>
+                                <path d="M205.4,366.8c-1.6,0.1-2.9,0.9-3.1,2.8C204.2,369.6,205.1,368.4,205.4,366.8"/>
+                                <path d="M207.7,368c-1.6,0.1-2.9,0.9-3.1,2.8C206.5,370.8,207.4,369.6,207.7,368"/>
+                                <path d="M209.9,369.2c-1.6,0.1-2.9,0.9-3.1,2.8C208.8,372,209.7,370.8,209.9,369.2"/>
+                                <path d="M206.7,364.5c1.9,0,2.8-1.2,3.1-2.8C208.1,361.8,206.9,362.6,206.7,364.5"/>
+                                <path d="M204.5,363.2c1.9,0,2.8-1.2,3.1-2.8C205.9,360.5,204.7,361.3,204.5,363.2"/>
+                                <path d="M202.3,361.9c1.9,0,2.8-1.2,3.1-2.8C203.7,359.2,202.5,360,202.3,361.9"/>
+                                <path d="M200.1,360.6c1.9,0,2.8-1.2,3.1-2.8C201.5,357.9,200.3,358.7,200.1,360.6"/>
+                                <path d="M197.9,359.3c1.9,0,2.8-1.2,3.1-2.8C199.3,356.6,198.1,357.4,197.9,359.3"/>
+                                <path d="M198.5,360.3c-1.6,0.1-2.9,0.9-3.1,2.8C197.3,363.1,198.2,361.9,198.5,360.3"/>
+                                <path d="M195,361.5c0.5-1.9-0.4-3-1.9-3.8C192.8,359.4,193.2,360.8,195,361.5"/>
+                                <path d="M194.5,364c-0.2-1.9-1.5-2.7-3.1-2.8C191.7,362.8,192.6,364,194.5,364"/>
+                                <path d="M194.1,366.9c-0.2-1.9-1.5-2.7-3.1-2.8C191.2,365.6,192.1,366.8,194.1,366.9"/>
+                                <path d="M199.4,374.8c1.9,0,2.8-1.2,3.1-2.8C200.9,372.1,199.7,372.9,199.4,374.8"/>
+                                <path d="M199.4,379.2c1.9,0,2.8-1.2,3.1-2.8C200.9,376.5,199.7,377.3,199.4,379.2"/>
+                                <path d="M197.3,373.5c1.9,0,2.8-1.2,3.1-2.8C198.7,370.8,197.5,371.6,197.3,373.5"/>
+                                <path d="M195.1,372.2c1.9,0,2.8-1.2,3.1-2.8C196.6,369.5,195.3,370.3,195.1,372.2"/>
+                                <path d="M192.9,370.9c1.9,0,2.8-1.2,3.1-2.8C194.4,368.2,193.1,369,192.9,370.9"/>
+                                <path d="M238.1,383.1c0,0,0.3,3.2,0.2,4.5c-0.1,1.5-0.3,2-1.4,2.7L213,402.5v0c0-2.3-0.1-5-0.1-8l0-0.8c0-1.6,0.4-2.5,2.3-3.7c1.6-1,19.3-11.4,19.3-11.4c0,0,0.1-0.1,0.1-0.2l-0.8-6.3h-0.3c0,0,0.2,2.6,0.2,3.7c-0.1,1.2-0.2,1.6-1.2,2.2l-19.8,10.2c-0.1-3-0.1-6.2-0.2-9.5l0-0.9c0-1,0.4-1.6,1.7-2.4c1.2-0.8,14.4-8.5,14.4-8.5c0,0,0.1-0.1,0.1-0.2l-0.6-4.7h-0.2c0,0,0.2,2,0.1,2.8c-0.1,0.9-0.2,1.2-0.9,1.7l-14.7,7.6c-0.1-3.7-0.1-7.4-0.2-11v0c0.1-0.5,0.4-1.2,1.2-1.7c0.9-0.6,10.3-6.1,10.3-6.1c0,0,0.1,0,0.1-0.1l-0.4-3.3h-0.1c0,0,0.1,1.4,0.1,2c0,0.6-0.1,0.9-0.6,1.2l-10.5,5.4v0c-0.1-3.4-0.1-6.7-0.2-9.8c0-0.5,0-1,0-1.6c-0.2-12.1-0.4-21.1-0.4-21.1c0-0.1,0-0.1-0.1-0.1c-0.1,0-0.1,0-0.1,0.1c0,0-0.2,9-0.4,21.1c0,0.2,0,0.5,0,0.7c0-0.2,0-0.5,0-0.7l-6.6-3.4c-0.3-0.2-0.4-0.3-0.4-0.7c0-0.4,0.1-1.2,0.1-1.2h-0.1l-0.3,2.1c0,0,0,0.1,0,0.1c0,0,6,3.5,6.5,3.8c0.4,0.2,0.6,0.5,0.7,0.8v0l0,0c-0.1,3.1-0.1,6.4-0.2,9.8l-10.5-5.4c-0.5-0.3-0.6-0.5-0.6-1.2c0-0.6,0.1-2,0.1-2h-0.1l-0.4,3.3c0,0.1,0,0.1,0.1,0.1c0,0,9.4,5.5,10.3,6.1c0.7,0.5,1.1,1.1,1.2,1.6v0c-0.1,3.7-0.1,7.4-0.2,11.1l-14.7-7.6c-0.7-0.4-0.8-0.8-0.9-1.7c-0.1-0.8,0.1-2.8,0.1-2.8H195l-0.6,4.7c0,0.1,0,0.1,0.1,0.2c0,0,13.2,7.7,14.4,8.5c1.3,0.8,1.7,1.5,1.7,2.5l0,0.9v0c-0.1,3.2-0.1,6.3-0.2,9.3l-19.8-10.2c-0.9-0.6-1.1-1-1.2-2.2c-0.1-1.1,0.2-3.7,0.2-3.7h-0.3l-0.8,6.3c0,0.1,0.1,0.2,0.1,0.2c0,0,17.7,10.3,19.3,11.4c1.9,1.2,2.3,2.1,2.3,3.7v0c-0.1,3.2-0.1,6.2-0.2,8.7l-23.9-12.3c-1.1-0.7-1.3-1.2-1.4-2.7c-0.1-1.3,0.2-4.5,0.2-4.5h-0.3l-1,7.6c0,0.2,0.1,0.2,0.1,0.3c0,0,21.4,12.5,23.4,13.8c2.3,1.5,2.8,1.6,2.8,4.3c0,0.1,0,3.2,0,3.4c0,2.4-1.9,2.4-1.9,2.4l0,0.5h6.9l0-0.5c0,0-1.9-0.1-1.9-2.4c0-0.1,0-3.1,0-3.4c0-2.7,0.5-2.8,2.8-4.3c2-1.3,23.4-13.8,23.4-13.8c0,0,0.1-0.1,0.1-0.3l-1-7.6L238.1,383.1"/>
+                                <path d="M204,377.5c1.9,0,2.8-1.2,3.1-2.8C205.4,374.8,204.2,375.5,204,377.5"/>
+                                <path d="M209.3,376c-1.6,0.1-2.9,0.9-3.1,2.8C208.1,378.9,209,377.7,209.3,376"/>
+                                <path d="M220.9,369.6c1.5-1.2,1.5-2.7,0.7-4.2C220.4,366.6,219.9,368,220.9,369.6"/>
+                                <path d="M217.8,367.5c-1.2,1.1-1.7,2.5-0.7,4.2C218.5,370.5,218.5,369,217.8,367.5"/>
+                                <path d="M213.7,361.8c0.3,1.6,1.2,2.8,3.1,2.8C216.6,362.7,215.3,361.9,213.7,361.8"/>
+                                <path d="M224.8,374.5c-0.2-1.9-1.5-2.7-3.1-2.8C221.9,373.3,222.8,374.5,224.8,374.5"/>
+                                <path d="M220.9,376.6c-0.2-1.9-1.5-2.7-3.1-2.8C218,375.4,218.9,376.6,220.9,376.6"/>
+                                <path d="M231.8,392.3c-0.2-1.9-1.5-2.7-3.1-2.9C229,391.1,229.9,392.2,231.8,392.3"/>
+                                <path d="M227.3,394.3c-0.2-1.9-1.5-2.7-3.1-2.8C224.5,393.1,225.4,394.3,227.3,394.3"/>
+                                <path d="M222.1,386.7c0.3,1.6,1.2,2.8,3.1,2.8C225,387.6,223.8,386.8,222.1,386.7"/>
+                                <path d="M219.2,398.5c-0.2-1.9-1.5-2.7-3.1-2.9C216.4,397.3,217.2,398.5,219.2,398.5"/>
+                                <path d="M236.4,393.7c-0.3,1.9,0.8,2.9,2.5,3.4C239,395.4,238.4,394.1,236.4,393.7"/>
+                                <path d="M232.1,396.8c0.1,1.9,1.4,2.7,3.1,2.9C235.1,398,234.2,396.8,232.1,396.8"/>
+                                <path d="M225.6,403.1c1.8-0.7,2.2-2.2,1.9-3.8C226,400,225.1,401.2,225.6,403.1"/>
+                                <path d="M233.3,373.8c-0.2-1.9-1.5-2.7-3.1-2.8C230.4,372.6,231.3,373.8,233.3,373.8"/>
+                                <path d="M233.1,376.7c-0.2-1.9-1.5-2.7-3.1-2.8C230.3,375.4,231.2,376.6,233.1,376.7"/>
+                                <path d="M234.8,378.6c1.9,0,2.8-1.2,3.1-2.8C236.3,375.9,235,376.6,234.8,378.6"/>
+                                <path d="M237.5,371c-1.6,0.1-2.9,0.9-3.1,2.8C236.3,373.8,237.2,372.6,237.5,371"/>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+            <span class="product-name">Labor Optimization</span>
+        </div>
+        <div class="header-actions">
+            <select class="property-selector">
+                <option>Four Seasons Park Lane, London</option>
+                <option>Four Seasons New York Downtown</option>
+                <option>Four Seasons Maui</option>
+                <option>Four Seasons Singapore</option>
+                <option>Four Seasons Dubai</option>
+            </select>
+            <div class="user-menu">
+                <div class="user-avatar">MC</div>
+                <span>M. Cocuron</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="nav-section">
+            <div class="nav-section-title">Overview</div>
+            <a class="nav-item active" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </a>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Guest Intelligence
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Scheduling</div>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Schedule Overview
+            </a>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Demand Forecast
+            </a>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Recommendations
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Departments</div>
+            <a class="nav-item" href="#">Housekeeping</a>
+            <a class="nav-item" href="#">Food & Beverage</a>
+            <a class="nav-item" href="#">Front Office</a>
+            <a class="nav-item" href="#">Spa & Recreation</a>
+            <a class="nav-item" href="#">Concierge</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">Analytics</div>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+                Labor Cost Analysis
+            </a>
+            <a class="nav-item" href="#">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                </svg>
+                Performance Reports
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Daily Demand Overview</h1>
+                <p class="page-subtitle">Guest-informed staffing recommendations for your property</p>
+            </div>
+            <div class="date-selector">
+                <button class="date-nav-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <div class="date-display">Saturday, February 15, 2026</div>
+                <button class="date-nav-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="alert-banner">
+            <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span class="alert-text"><strong>Staffing Alert:</strong> High F&B demand predicted for Saturday evening. Current schedule may be understaffed by 2 servers.</span>
+            <span class="alert-action">Review Recommendation</span>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-row">
+            <div class="summary-card">
+                <div class="summary-label">Occupancy</div>
+                <div class="summary-value">85%</div>
+                <div class="summary-change positive">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    </svg>
+                    +12% vs last Saturday
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Arriving Guests</div>
+                <div class="summary-value">142</div>
+                <div class="summary-change">
+                    38 VIP / Repeat Guests
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Projected Labor Cost</div>
+                <div class="summary-value">£42,800</div>
+                <div class="summary-change positive">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                    </svg>
+                    -£2,400 vs standard schedule
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Forecast Accuracy</div>
+                <div class="summary-value">94%</div>
+                <div class="summary-change">
+                    Last 30 days average
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Department Demand Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Department Demand Forecast</span>
+                    <span class="card-action">View Details</span>
+                </div>
+                <div class="card-body">
+                    <table class="department-table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Scheduled</th>
+                                <th>Recommended</th>
+                                <th>Demand Level</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dept-name">Housekeeping</td>
+                                <td class="dept-metric">24</td>
+                                <td class="dept-metric">22</td>
+                                <td>
+                                    <div class="demand-bar-container">
+                                        <div class="demand-bar normal" style="width: 65%"></div>
+                                    </div>
+                                </td>
+                                <td><span class="recommendation-badge reduce">-2 Staff</span></td>
+                            </tr>
+                            <tr>
+                                <td class="dept-name">Food & Beverage</td>
+                                <td class="dept-metric">18</td>
+                                <td class="dept-metric">21</td>
+                                <td>
+                                    <div class="demand-bar-container">
+                                        <div class="demand-bar high" style="width: 92%"></div>
+                                    </div>
+                                </td>
+                                <td><span class="recommendation-badge add">+3 Staff</span></td>
+                            </tr>
+                            <tr>
+                                <td class="dept-name">Front Office</td>
+                                <td class="dept-metric">8</td>
+                                <td class="dept-metric">8</td>
+                                <td>
+                                    <div class="demand-bar-container">
+                                        <div class="demand-bar normal" style="width: 70%"></div>
+                                    </div>
+                                </td>
+                                <td><span class="recommendation-badge standard">Standard</span></td>
+                            </tr>
+                            <tr>
+                                <td class="dept-name">Spa & Recreation</td>
+                                <td class="dept-metric">6</td>
+                                <td class="dept-metric">7</td>
+                                <td>
+                                    <div class="demand-bar-container">
+                                        <div class="demand-bar medium" style="width: 78%"></div>
+                                    </div>
+                                </td>
+                                <td><span class="recommendation-badge add">+1 Staff</span></td>
+                            </tr>
+                            <tr>
+                                <td class="dept-name">Concierge</td>
+                                <td class="dept-metric">4</td>
+                                <td class="dept-metric">4</td>
+                                <td>
+                                    <div class="demand-bar-container">
+                                        <div class="demand-bar normal" style="width: 55%"></div>
+                                    </div>
+                                </td>
+                                <td><span class="recommendation-badge standard">Standard</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-secondary">Export to Fourth</button>
+                    <button class="btn btn-gold">Approve Recommendations</button>
+                </div>
+            </div>
+
+            <!-- Guest Intelligence Panel -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Guest Intelligence</span>
+                    <span class="card-action">View All</span>
+                </div>
+                <div class="guest-panel">
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">High F&B Users</span>
+                        <span class="guest-stat-value">56% (180 guests)</span>
+                    </div>
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">Spa History</span>
+                        <span class="guest-stat-value">30% (95 guests)</span>
+                    </div>
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">Early Checkout Pattern</span>
+                        <span class="guest-stat-value">45 rooms</span>
+                    </div>
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">Late Checkout Pattern</span>
+                        <span class="guest-stat-value">28 rooms</span>
+                    </div>
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">Families with Children</span>
+                        <span class="guest-stat-value">12 families</span>
+                    </div>
+                    <div class="guest-stat">
+                        <span class="guest-stat-label">Dietary Restrictions</span>
+                        <span class="guest-stat-value">20 guests</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIP Arrivals -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">VIP Arrivals Today</span>
+                    <span class="card-action">View All 15</span>
+                </div>
+                <div class="card-body">
+                    <ul class="vip-list">
+                        <li class="vip-item">
+                            <div class="vip-avatar">JC</div>
+                            <div class="vip-info">
+                                <div class="vip-name">John Chen</div>
+                                <div class="vip-details">12 stays | Arrival 14:00 | Suite 801</div>
+                            </div>
+                            <span class="vip-badge">PREFERRED</span>
+                        </li>
+                        <li class="vip-item">
+                            <div class="vip-avatar">SM</div>
+                            <div class="vip-info">
+                                <div class="vip-name">Sarah Mitchell</div>
+                                <div class="vip-details">8 stays | Arrival 15:30 | Suite 1205</div>
+                            </div>
+                            <span class="vip-badge">VIP</span>
+                        </li>
+                        <li class="vip-item">
+                            <div class="vip-avatar">RK</div>
+                            <div class="vip-info">
+                                <div class="vip-name">Robert Kim</div>
+                                <div class="vip-details">22 stays | Arrival 16:00 | Presidential</div>
+                            </div>
+                            <span class="vip-badge">ELITE</span>
+                        </li>
+                        <li class="vip-item">
+                            <div class="vip-avatar">AL</div>
+                            <div class="vip-info">
+                                <div class="vip-name">Amanda Li</div>
+                                <div class="vip-details">5 stays | Arrival 18:00 | Suite 605</div>
+                            </div>
+                            <span class="vip-badge">PREFERRED</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cost Projection -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Cost Projection</span>
+                </div>
+                <div class="card-body">
+                    <div class="cost-row">
+                        <span class="cost-label">Standard Schedule</span>
+                        <span class="cost-value">£45,200</span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">Optimized Schedule</span>
+                        <span class="cost-value">£42,800</span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">Projected Savings</span>
+                        <span class="cost-value cost-savings">£2,400 (5.3%)</span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">MTD Savings</span>
+                        <span class="cost-value cost-savings">£18,600</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Schedule Overview -->
+            <div class="dashboard-card full-width-card">
+                <div class="card-header">
+                    <span class="card-title">7-Day Schedule Overview</span>
+                    <span class="card-action">Manage Schedule</span>
+                </div>
+                <div class="tabs">
+                    <div class="tab active">All Departments</div>
+                    <div class="tab">Housekeeping</div>
+                    <div class="tab">F&B</div>
+                    <div class="tab">Front Office</div>
+                    <div class="tab">Spa</div>
+                </div>
+                <div class="card-body">
+                    <div class="schedule-grid">
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Thu</div>
+                            <div class="schedule-day-date">13</div>
+                            <div class="schedule-staff-count">58 staff</div>
+                            <div class="schedule-variance positive">-£1,800</div>
+                        </div>
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Fri</div>
+                            <div class="schedule-day-date">14</div>
+                            <div class="schedule-staff-count">62 staff</div>
+                            <div class="schedule-variance positive">-£2,100</div>
+                        </div>
+                        <div class="schedule-day today">
+                            <div class="schedule-day-header">Sat</div>
+                            <div class="schedule-day-date">15</div>
+                            <div class="schedule-staff-count">60 staff</div>
+                            <div class="schedule-variance positive">-£2,400</div>
+                        </div>
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Sun</div>
+                            <div class="schedule-day-date">16</div>
+                            <div class="schedule-staff-count">52 staff</div>
+                            <div class="schedule-variance positive">-£1,500</div>
+                        </div>
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Mon</div>
+                            <div class="schedule-day-date">17</div>
+                            <div class="schedule-staff-count">48 staff</div>
+                            <div class="schedule-variance positive">-£900</div>
+                        </div>
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Tue</div>
+                            <div class="schedule-day-date">18</div>
+                            <div class="schedule-staff-count">46 staff</div>
+                            <div class="schedule-variance positive">-£750</div>
+                        </div>
+                        <div class="schedule-day">
+                            <div class="schedule-day-header">Wed</div>
+                            <div class="schedule-day-date">19</div>
+                            <div class="schedule-staff-count">50 staff</div>
+                            <div class="schedule-variance positive">-£1,200</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
