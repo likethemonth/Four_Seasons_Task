@@ -9,28 +9,40 @@ interface HourlyData {
   guestDemand: number;
 }
 
-// Mock data for hourly staffing (6am - 10pm)
-const hourlyData: HourlyData[] = [
-  { hour: "6am", scheduled: 8, required: 6, guestDemand: 15 },
-  { hour: "7am", scheduled: 12, required: 14, guestDemand: 30 },
-  { hour: "8am", scheduled: 18, required: 18, guestDemand: 45 },
-  { hour: "9am", scheduled: 22, required: 22, guestDemand: 55 },
-  { hour: "10am", scheduled: 24, required: 26, guestDemand: 65 },
-  { hour: "11am", scheduled: 26, required: 26, guestDemand: 70 },
-  { hour: "12pm", scheduled: 28, required: 28, guestDemand: 80 },
-  { hour: "1pm", scheduled: 26, required: 28, guestDemand: 75 },
-  { hour: "2pm", scheduled: 24, required: 24, guestDemand: 70 },
-  { hour: "3pm", scheduled: 26, required: 28, guestDemand: 85 },
-  { hour: "4pm", scheduled: 28, required: 26, guestDemand: 90 },
-  { hour: "5pm", scheduled: 30, required: 28, guestDemand: 95 },
-  { hour: "6pm", scheduled: 28, required: 30, guestDemand: 100 },
-  { hour: "7pm", scheduled: 26, required: 28, guestDemand: 95 },
-  { hour: "8pm", scheduled: 24, required: 24, guestDemand: 85 },
-  { hour: "9pm", scheduled: 18, required: 18, guestDemand: 60 },
-  { hour: "10pm", scheduled: 12, required: 10, guestDemand: 35 },
-];
+interface DeploymentChartProps {
+  selectedDate: Date;
+}
 
-const maxStaff = Math.max(...hourlyData.map((d) => Math.max(d.scheduled, d.required)));
+function generateHourlyData(date: Date): HourlyData[] {
+  const dateNum = date.getDate();
+  const dayOfWeek = date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isFriday = dayOfWeek === 5;
+
+  const demandMultiplier = isWeekend ? 1.2 : isFriday ? 1.1 : 1.0;
+  const variance = dateNum % 5;
+
+  return [
+    { hour: "6am", scheduled: 6 + variance, required: 5 + variance, guestDemand: Math.round(12 * demandMultiplier) },
+    { hour: "7am", scheduled: 10 + variance, required: 12 + variance, guestDemand: Math.round(28 * demandMultiplier) },
+    { hour: "8am", scheduled: 16 + variance, required: 16 + variance, guestDemand: Math.round(42 * demandMultiplier) },
+    { hour: "9am", scheduled: 20 + variance, required: 20 + variance, guestDemand: Math.round(52 * demandMultiplier) },
+    { hour: "10am", scheduled: 22 + variance, required: 24 + variance, guestDemand: Math.round(62 * demandMultiplier) },
+    { hour: "11am", scheduled: 24 + variance, required: 24 + variance, guestDemand: Math.round(68 * demandMultiplier) },
+    { hour: "12pm", scheduled: 26 + variance, required: 26 + variance, guestDemand: Math.round(78 * demandMultiplier) },
+    { hour: "1pm", scheduled: 24 + variance, required: 26 + variance, guestDemand: Math.round(73 * demandMultiplier) },
+    { hour: "2pm", scheduled: 22 + variance, required: 22 + variance, guestDemand: Math.round(68 * demandMultiplier) },
+    { hour: "3pm", scheduled: 24 + variance, required: 26 + variance, guestDemand: Math.round(82 * demandMultiplier) },
+    { hour: "4pm", scheduled: 26 + variance, required: 24 + variance, guestDemand: Math.round(88 * demandMultiplier) },
+    { hour: "5pm", scheduled: 28 + variance, required: 26 + variance, guestDemand: Math.round(92 * demandMultiplier) },
+    { hour: "6pm", scheduled: 26 + variance, required: 28 + variance, guestDemand: Math.round(98 * demandMultiplier) },
+    { hour: "7pm", scheduled: 24 + variance, required: 26 + variance, guestDemand: Math.round(92 * demandMultiplier) },
+    { hour: "8pm", scheduled: 22 + variance, required: 22 + variance, guestDemand: Math.round(82 * demandMultiplier) },
+    { hour: "9pm", scheduled: 16 + variance, required: 16 + variance, guestDemand: Math.round(58 * demandMultiplier) },
+    { hour: "10pm", scheduled: 10 + variance, required: 8 + variance, guestDemand: Math.round(32 * demandMultiplier) },
+  ];
+}
+
 const chartHeight = 200;
 
 function getStatus(scheduled: number, required: number): "over" | "under" | "correct" {
@@ -51,7 +63,10 @@ function getStatusColor(status: "over" | "under" | "correct"): string {
   }
 }
 
-export default function DeploymentChart() {
+export default function DeploymentChart({ selectedDate }: DeploymentChartProps) {
+  const hourlyData = generateHourlyData(selectedDate);
+  const maxStaff = Math.max(...hourlyData.map((d) => Math.max(d.scheduled, d.required)));
+
   // Calculate totals
   const totalScheduled = hourlyData.reduce((sum, d) => sum + d.scheduled, 0);
   const totalRequired = hourlyData.reduce((sum, d) => sum + d.required, 0);
@@ -59,6 +74,10 @@ export default function DeploymentChart() {
   const overHours = hourlyData.filter((d) => getStatus(d.scheduled, d.required) === "over").length;
   const underHours = hourlyData.filter((d) => getStatus(d.scheduled, d.required) === "under").length;
   const correctHours = hourlyData.filter((d) => getStatus(d.scheduled, d.required) === "correct").length;
+
+  // Calculate savings based on date
+  const dateNum = selectedDate.getDate();
+  const savings = 2000 + (dateNum % 5) * 200;
 
   return (
     <Card>
@@ -196,7 +215,7 @@ export default function DeploymentChart() {
 
             <div className="mb-6">
               <div className="text-[12px] text-gray-500 uppercase tracking-wider mb-1">Savings</div>
-              <div className="font-display text-[24px] text-[#2E7D32]">£2,400</div>
+              <div className="font-display text-[24px] text-[#2E7D32]">£{savings.toLocaleString()}</div>
             </div>
 
             <div className="space-y-3">

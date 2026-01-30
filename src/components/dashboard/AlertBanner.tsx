@@ -11,17 +11,44 @@ interface Alert {
   action?: string;
 }
 
-const alerts: Alert[] = [
-  {
-    id: "1",
-    type: "warning",
-    title: "Staffing Alert",
-    message: "High F&B demand predicted for Saturday evening. Current schedule may be understaffed by 2 servers.",
-    action: "Review Recommendation",
-  },
-];
+interface AlertBannerProps {
+  selectedDate: Date;
+}
 
-export default function AlertBanner() {
+function generateAlerts(date: Date): Alert[] {
+  const dayOfWeek = date.getDay();
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayName = dayNames[dayOfWeek];
+
+  const alerts: Alert[] = [];
+
+  // Weekend alerts
+  if (dayOfWeek === 5 || dayOfWeek === 6) {
+    alerts.push({
+      id: "1",
+      type: "warning",
+      title: "Staffing Alert",
+      message: `High F&B demand predicted for ${dayName} evening. Current schedule may be understaffed by ${dayOfWeek === 6 ? 3 : 2} servers.`,
+      action: "Review Recommendation",
+    });
+  }
+
+  // Weekday alerts
+  if (dayOfWeek >= 1 && dayOfWeek <= 4) {
+    alerts.push({
+      id: "2",
+      type: "info",
+      title: "Schedule Optimized",
+      message: `${dayName}'s staffing levels are aligned with projected demand. 2 staff members moved to flexible pool.`,
+      action: "View Details",
+    });
+  }
+
+  return alerts;
+}
+
+export default function AlertBanner({ selectedDate }: AlertBannerProps) {
+  const alerts = generateAlerts(selectedDate);
   const [visibleAlerts, setVisibleAlerts] = useState(alerts);
 
   const dismissAlert = (id: string) => {

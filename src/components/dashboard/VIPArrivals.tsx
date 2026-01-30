@@ -53,161 +53,6 @@ interface VIPGuest {
   staffingImplications: StaffingImplication[];
 }
 
-const vipGuests: VIPGuest[] = [
-  {
-    id: "1",
-    name: "John Chen",
-    initials: "JC",
-    stayCount: 12,
-    arrivalTime: "14:00",
-    room: "Suite 801",
-    tier: "PREFERRED",
-    specialRequests: ["Early check-in", "Champagne on arrival"],
-    preferences: {
-      dietary: "Dairy-free",
-      roomPreferences: ["High floor", "City view"],
-    },
-    spendHistory: {
-      avgPerStay: 2840,
-      topCategory: "Room Service",
-    },
-    servicePredictions: [
-      { service: "F&B", usage: "heavy", detail: "Ordered room service 80% of stays", icon: <UtensilsCrossed size={14} /> },
-      { service: "Spa", usage: "none", detail: "No spa bookings in history", icon: <Sparkles size={14} /> },
-      { service: "Gym", usage: "heavy", detail: "Morning user (6-7am)", icon: <Dumbbell size={14} /> },
-      { service: "Checkout", usage: "light", detail: "Early pattern (avg 6:30am)", icon: <LogOut size={14} /> },
-      { service: "Concierge", usage: "light", detail: "Low usage", icon: <Headphones size={14} /> },
-    ],
-    staffingImplications: [
-      { department: "Room Service", action: "Include in evening demand forecast" },
-      { department: "Housekeeping", action: "Early turnover likely" },
-      { department: "Kitchen", action: "Dairy-free prep required" },
-      { department: "Gym", action: "Morning attendant coverage" },
-    ],
-  },
-  {
-    id: "2",
-    name: "Sarah Mitchell",
-    initials: "SM",
-    stayCount: 8,
-    arrivalTime: "15:30",
-    room: "Suite 1205",
-    tier: "VIP",
-    specialRequests: ["Airport transfer arranged", "Spa appointment 4pm"],
-    preferences: {
-      roomPreferences: ["Quiet room", "Extra pillows"],
-    },
-    spendHistory: {
-      avgPerStay: 3200,
-      topCategory: "Spa",
-    },
-    servicePredictions: [
-      { service: "F&B", usage: "moderate", detail: "Restaurant dining 60% of stays", icon: <UtensilsCrossed size={14} /> },
-      { service: "Spa", usage: "heavy", detail: "Booked spa 90% of stays", icon: <Sparkles size={14} /> },
-      { service: "Gym", usage: "moderate", detail: "Afternoon user", icon: <Dumbbell size={14} /> },
-      { service: "Checkout", usage: "moderate", detail: "Standard checkout (11am)", icon: <LogOut size={14} /> },
-      { service: "Concierge", usage: "moderate", detail: "Regular requests", icon: <Headphones size={14} /> },
-    ],
-    staffingImplications: [
-      { department: "Spa", action: "Premium therapist availability" },
-      { department: "F&B", action: "Restaurant reservation priority" },
-      { department: "Housekeeping", action: "Standard turnover schedule" },
-    ],
-  },
-  {
-    id: "3",
-    name: "Robert Kim",
-    initials: "RK",
-    stayCount: 22,
-    arrivalTime: "16:00",
-    room: "Presidential",
-    tier: "ELITE",
-    specialRequests: ["GM welcome", "Private dining 8pm"],
-    preferences: {
-      dietary: "Pescatarian",
-      roomPreferences: ["Same room as previous"],
-      pastComplaints: "Noise issue - Jun 2025",
-    },
-    spendHistory: {
-      avgPerStay: 8500,
-      topCategory: "F&B",
-    },
-    servicePredictions: [
-      { service: "F&B", usage: "heavy", detail: "Private dining 95% of stays", icon: <UtensilsCrossed size={14} /> },
-      { service: "Spa", usage: "light", detail: "Occasional massage booking", icon: <Sparkles size={14} /> },
-      { service: "Gym", usage: "none", detail: "No gym usage", icon: <Dumbbell size={14} /> },
-      { service: "Checkout", usage: "heavy", detail: "Late checkout (2pm+)", icon: <LogOut size={14} /> },
-      { service: "Concierge", usage: "heavy", detail: "High-touch guest", icon: <Headphones size={14} /> },
-    ],
-    staffingImplications: [
-      { department: "F&B", action: "Executive chef attention for private dining" },
-      { department: "Kitchen", action: "Pescatarian menu preparation" },
-      { department: "Concierge", action: "Dedicated concierge assignment" },
-      { department: "Housekeeping", action: "Late turnover, noise-sensitive room" },
-      { department: "Management", action: "GM welcome scheduled" },
-    ],
-  },
-  {
-    id: "4",
-    name: "Amanda Li",
-    initials: "AL",
-    stayCount: 5,
-    arrivalTime: "18:00",
-    room: "Suite 605",
-    tier: "PREFERRED",
-    specialRequests: ["Late check-out pre-approved"],
-    preferences: {
-      dietary: "Vegan",
-    },
-    spendHistory: {
-      avgPerStay: 1950,
-      topCategory: "Restaurant",
-    },
-    servicePredictions: [
-      { service: "F&B", usage: "moderate", detail: "Restaurant focused, minimal room service", icon: <UtensilsCrossed size={14} /> },
-      { service: "Spa", usage: "moderate", detail: "Booked spa 40% of stays", icon: <Sparkles size={14} /> },
-      { service: "Gym", usage: "heavy", detail: "Daily yoga studio user", icon: <Dumbbell size={14} /> },
-      { service: "Checkout", usage: "heavy", detail: "Late checkout pattern (2pm)", icon: <LogOut size={14} /> },
-      { service: "Concierge", usage: "light", detail: "Low usage", icon: <Headphones size={14} /> },
-    ],
-    staffingImplications: [
-      { department: "Kitchen", action: "Vegan options available" },
-      { department: "Housekeeping", action: "Late turnover required" },
-      { department: "Gym", action: "Yoga studio morning availability" },
-    ],
-  },
-  {
-    id: "5",
-    name: "Michael Torres",
-    initials: "MT",
-    stayCount: 15,
-    arrivalTime: "20:00",
-    room: "Suite 910",
-    tier: "ELITE",
-    specialRequests: ["Business center access", "Morning car service"],
-    preferences: {
-      roomPreferences: ["Corner room", "Desk setup"],
-    },
-    spendHistory: {
-      avgPerStay: 4200,
-      topCategory: "Room Service",
-    },
-    servicePredictions: [
-      { service: "F&B", usage: "heavy", detail: "Room service 85% of stays", icon: <UtensilsCrossed size={14} /> },
-      { service: "Spa", usage: "none", detail: "No spa history", icon: <Sparkles size={14} /> },
-      { service: "Gym", usage: "moderate", detail: "Evening user (7-8pm)", icon: <Dumbbell size={14} /> },
-      { service: "Checkout", usage: "light", detail: "Early checkout (6am flights)", icon: <LogOut size={14} /> },
-      { service: "Concierge", usage: "heavy", detail: "Business services focused", icon: <Headphones size={14} /> },
-    ],
-    staffingImplications: [
-      { department: "Room Service", action: "Late evening availability" },
-      { department: "Housekeeping", action: "Early turnover (6am checkout)" },
-      { department: "Concierge", action: "Business center support" },
-      { department: "Transport", action: "Morning car service confirmed" },
-    ],
-  },
-];
-
 const tierColors = {
   ELITE: "bg-black text-white",
   PREFERRED: "bg-gray-800 text-white",
@@ -228,7 +73,180 @@ const usageLabels = {
   none: "None",
 };
 
-export default function VIPArrivals() {
+interface VIPArrivalsProps {
+  selectedDate: Date;
+}
+
+function generateVIPGuests(date: Date): VIPGuest[] {
+  const dateNum = date.getDate();
+  const dayOfWeek = date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+  // Vary arrival times based on date
+  const baseGuests: VIPGuest[] = [
+    {
+      id: "1",
+      name: "John Chen",
+      initials: "JC",
+      stayCount: 12 + (dateNum % 3),
+      arrivalTime: `${13 + (dateNum % 3)}:00`,
+      room: `Suite ${800 + (dateNum % 5)}`,
+      tier: "PREFERRED",
+      specialRequests: ["Early check-in", "Champagne on arrival"],
+      preferences: {
+        dietary: "Dairy-free",
+        roomPreferences: ["High floor", "City view"],
+      },
+      spendHistory: {
+        avgPerStay: 2840 + (dateNum * 50),
+        topCategory: "Room Service",
+      },
+      servicePredictions: [
+        { service: "F&B", usage: "heavy", detail: "Ordered room service 80% of stays", icon: <UtensilsCrossed size={14} /> },
+        { service: "Spa", usage: "none", detail: "No spa bookings in history", icon: <Sparkles size={14} /> },
+        { service: "Gym", usage: "heavy", detail: "Morning user (6-7am)", icon: <Dumbbell size={14} /> },
+        { service: "Checkout", usage: "light", detail: "Early pattern (avg 6:30am)", icon: <LogOut size={14} /> },
+        { service: "Concierge", usage: "light", detail: "Low usage", icon: <Headphones size={14} /> },
+      ],
+      staffingImplications: [
+        { department: "Room Service", action: "Include in evening demand forecast" },
+        { department: "Housekeeping", action: "Early turnover likely" },
+        { department: "Kitchen", action: "Dairy-free prep required" },
+        { department: "Gym", action: "Morning attendant coverage" },
+      ],
+    },
+    {
+      id: "2",
+      name: "Sarah Mitchell",
+      initials: "SM",
+      stayCount: 8 + (dateNum % 4),
+      arrivalTime: `${14 + (dateNum % 4)}:30`,
+      room: `Suite ${1200 + (dateNum % 10)}`,
+      tier: "VIP",
+      specialRequests: ["Airport transfer arranged", `Spa appointment ${15 + (dateNum % 4)}pm`],
+      preferences: {
+        roomPreferences: ["Quiet room", "Extra pillows"],
+      },
+      spendHistory: {
+        avgPerStay: 3200 + (dateNum * 40),
+        topCategory: "Spa",
+      },
+      servicePredictions: [
+        { service: "F&B", usage: "moderate", detail: "Restaurant dining 60% of stays", icon: <UtensilsCrossed size={14} /> },
+        { service: "Spa", usage: "heavy", detail: "Booked spa 90% of stays", icon: <Sparkles size={14} /> },
+        { service: "Gym", usage: "moderate", detail: "Afternoon user", icon: <Dumbbell size={14} /> },
+        { service: "Checkout", usage: "moderate", detail: "Standard checkout (11am)", icon: <LogOut size={14} /> },
+        { service: "Concierge", usage: "moderate", detail: "Regular requests", icon: <Headphones size={14} /> },
+      ],
+      staffingImplications: [
+        { department: "Spa", action: "Premium therapist availability" },
+        { department: "F&B", action: "Restaurant reservation priority" },
+        { department: "Housekeeping", action: "Standard turnover schedule" },
+      ],
+    },
+    {
+      id: "3",
+      name: "Robert Kim",
+      initials: "RK",
+      stayCount: 22 + (dateNum % 5),
+      arrivalTime: `${15 + (dateNum % 3)}:00`,
+      room: "Presidential",
+      tier: "ELITE",
+      specialRequests: ["GM welcome", `Private dining ${19 + (dateNum % 2)}pm`],
+      preferences: {
+        dietary: "Pescatarian",
+        roomPreferences: ["Same room as previous"],
+        pastComplaints: "Noise issue - Jun 2025",
+      },
+      spendHistory: {
+        avgPerStay: 8500 + (dateNum * 100),
+        topCategory: "F&B",
+      },
+      servicePredictions: [
+        { service: "F&B", usage: "heavy", detail: "Private dining 95% of stays", icon: <UtensilsCrossed size={14} /> },
+        { service: "Spa", usage: "light", detail: "Occasional massage booking", icon: <Sparkles size={14} /> },
+        { service: "Gym", usage: "none", detail: "No gym usage", icon: <Dumbbell size={14} /> },
+        { service: "Checkout", usage: "heavy", detail: "Late checkout (2pm+)", icon: <LogOut size={14} /> },
+        { service: "Concierge", usage: "heavy", detail: "High-touch guest", icon: <Headphones size={14} /> },
+      ],
+      staffingImplications: [
+        { department: "F&B", action: "Executive chef attention for private dining" },
+        { department: "Kitchen", action: "Pescatarian menu preparation" },
+        { department: "Concierge", action: "Dedicated concierge assignment" },
+        { department: "Housekeeping", action: "Late turnover, noise-sensitive room" },
+        { department: "Management", action: "GM welcome scheduled" },
+      ],
+    },
+  ];
+
+  // Add extra guests on weekends
+  if (isWeekend) {
+    baseGuests.push({
+      id: "4",
+      name: "Amanda Li",
+      initials: "AL",
+      stayCount: 5 + (dateNum % 3),
+      arrivalTime: `${17 + (dateNum % 2)}:00`,
+      room: `Suite ${600 + (dateNum % 8)}`,
+      tier: "PREFERRED",
+      specialRequests: ["Late check-out pre-approved"],
+      preferences: {
+        dietary: "Vegan",
+      },
+      spendHistory: {
+        avgPerStay: 1950 + (dateNum * 30),
+        topCategory: "Restaurant",
+      },
+      servicePredictions: [
+        { service: "F&B", usage: "moderate", detail: "Restaurant focused, minimal room service", icon: <UtensilsCrossed size={14} /> },
+        { service: "Spa", usage: "moderate", detail: "Booked spa 40% of stays", icon: <Sparkles size={14} /> },
+        { service: "Gym", usage: "heavy", detail: "Daily yoga studio user", icon: <Dumbbell size={14} /> },
+        { service: "Checkout", usage: "heavy", detail: "Late checkout pattern (2pm)", icon: <LogOut size={14} /> },
+        { service: "Concierge", usage: "light", detail: "Low usage", icon: <Headphones size={14} /> },
+      ],
+      staffingImplications: [
+        { department: "Kitchen", action: "Vegan options available" },
+        { department: "Housekeeping", action: "Late turnover required" },
+        { department: "Gym", action: "Yoga studio morning availability" },
+      ],
+    });
+    baseGuests.push({
+      id: "5",
+      name: "Michael Torres",
+      initials: "MT",
+      stayCount: 15 + (dateNum % 4),
+      arrivalTime: `${19 + (dateNum % 2)}:00`,
+      room: `Suite ${900 + (dateNum % 12)}`,
+      tier: "ELITE",
+      specialRequests: ["Business center access", "Morning car service"],
+      preferences: {
+        roomPreferences: ["Corner room", "Desk setup"],
+      },
+      spendHistory: {
+        avgPerStay: 4200 + (dateNum * 60),
+        topCategory: "Room Service",
+      },
+      servicePredictions: [
+        { service: "F&B", usage: "heavy", detail: "Room service 85% of stays", icon: <UtensilsCrossed size={14} /> },
+        { service: "Spa", usage: "none", detail: "No spa history", icon: <Sparkles size={14} /> },
+        { service: "Gym", usage: "moderate", detail: "Evening user (7-8pm)", icon: <Dumbbell size={14} /> },
+        { service: "Checkout", usage: "light", detail: "Early checkout (6am flights)", icon: <LogOut size={14} /> },
+        { service: "Concierge", usage: "heavy", detail: "Business services focused", icon: <Headphones size={14} /> },
+      ],
+      staffingImplications: [
+        { department: "Room Service", action: "Late evening availability" },
+        { department: "Housekeeping", action: "Early turnover (6am checkout)" },
+        { department: "Concierge", action: "Business center support" },
+        { department: "Transport", action: "Morning car service confirmed" },
+      ],
+    });
+  }
+
+  return baseGuests;
+}
+
+export default function VIPArrivals({ selectedDate }: VIPArrivalsProps) {
+  const vipGuests = generateVIPGuests(selectedDate);
   const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 
   const toggleExpand = (guestId: string) => {

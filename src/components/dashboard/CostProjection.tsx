@@ -9,28 +9,52 @@ interface CostLine {
   isSavings?: boolean;
 }
 
-const todayCosts: CostLine[] = [
-  { label: "Standard Schedule", value: 45200 },
-  { label: "Optimized Schedule", value: 42800 },
-  { label: "Projected Savings", value: 2400, isSavings: true },
-];
+interface CostProjectionProps {
+  selectedDate: Date;
+}
 
-const periodSavings = [
-  { period: "Today", amount: 2400, percentage: 5.3 },
-  { period: "This Week", amount: 12800, percentage: 4.8 },
-  { period: "MTD", amount: 38600, percentage: 5.1 },
-  { period: "YTD", amount: 428000, percentage: 4.9 },
-];
+function generateCostData(date: Date) {
+  const dateNum = date.getDate();
+  const dayOfWeek = date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-const departmentSavings = [
-  { dept: "Housekeeping", saved: 8200, target: 10000 },
-  { dept: "F&B", saved: 12400, target: 15000 },
-  { dept: "Front Office", saved: 3200, target: 4000 },
-  { dept: "Spa", saved: 4800, target: 6000 },
-  { dept: "Concierge", saved: 2100, target: 3000 },
-];
+  const standardCost = 42000 + (isWeekend ? 5000 : 0) + (dateNum * 100);
+  const optimizedCost = Math.round(standardCost * (0.94 + (dateNum % 3) * 0.005));
+  const savings = standardCost - optimizedCost;
 
-export default function CostProjection() {
+  const todayCosts: CostLine[] = [
+    { label: "Standard Schedule", value: standardCost },
+    { label: "Optimized Schedule", value: optimizedCost },
+    { label: "Projected Savings", value: savings, isSavings: true },
+  ];
+
+  const weekSavings = savings * 7 + (dateNum % 5) * 500;
+  const mtdSavings = savings * dateNum + (dateNum % 3) * 2000;
+  const ytdSavings = mtdSavings * 12 + (dateNum % 4) * 10000;
+
+  const periodSavings = [
+    { period: "Today", amount: savings, percentage: Number(((savings / standardCost) * 100).toFixed(1)) },
+    { period: "This Week", amount: weekSavings, percentage: 4.6 + (dateNum % 5) * 0.2 },
+    { period: "MTD", amount: mtdSavings, percentage: 4.8 + (dateNum % 4) * 0.15 },
+    { period: "YTD", amount: ytdSavings, percentage: 4.7 + (dateNum % 3) * 0.2 },
+  ];
+
+  const deptMultiplier = 1 + (dateNum % 5) * 0.05;
+  const departmentSavings = [
+    { dept: "Housekeeping", saved: Math.round(7500 * deptMultiplier), target: 10000 },
+    { dept: "F&B", saved: Math.round(11000 * deptMultiplier), target: 15000 },
+    { dept: "Front Office", saved: Math.round(2800 * deptMultiplier), target: 4000 },
+    { dept: "Spa", saved: Math.round(4200 * deptMultiplier), target: 6000 },
+    { dept: "Concierge", saved: Math.round(1800 * deptMultiplier), target: 3000 },
+  ];
+
+  const annualProjection = (ytdSavings / dateNum) * 365;
+
+  return { todayCosts, periodSavings, departmentSavings, standardCost, annualProjection };
+}
+
+export default function CostProjection({ selectedDate }: CostProjectionProps) {
+  const { todayCosts, periodSavings, departmentSavings, standardCost, annualProjection } = generateCostData(selectedDate);
   return (
     <Card>
       <CardHeader title="Cost Projection" />
@@ -51,7 +75,7 @@ export default function CostProjection() {
                 {line.isSavings && "-"}£{line.value.toLocaleString()}
                 {line.isSavings && (
                   <span className="ml-1 text-[12px]">
-                    ({((line.value / 45200) * 100).toFixed(1)}%)
+                    ({((line.value / standardCost) * 100).toFixed(1)}%)
                   </span>
                 )}
               </span>
@@ -125,10 +149,10 @@ export default function CostProjection() {
             </span>
           </div>
           <div className="font-display text-[28px] text-white">
-            £2.1M
+            £{(annualProjection / 1000000).toFixed(1)}M
           </div>
           <div className="text-[12px] text-gray-400 mt-1">
-            Based on current optimization rate of 5.1%
+            Based on current optimization rate
           </div>
         </div>
       </CardBody>

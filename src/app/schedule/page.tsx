@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import DateSelector from "@/components/dashboard/DateSelector";
 
 export default function SchedulePage() {
+  const [selectedDate, setSelectedDate] = useState(new Date(2026, 1, 15));
   return (
     <div>
       {/* Page Header */}
@@ -14,7 +18,7 @@ export default function SchedulePage() {
             Manage staff schedules and view shift assignments
           </p>
         </div>
-        <DateSelector />
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
       {/* Full Schedule Component */}

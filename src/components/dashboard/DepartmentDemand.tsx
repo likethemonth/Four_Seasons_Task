@@ -5,6 +5,10 @@ import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import ApproveModal from "./ApproveModal";
 
+interface DepartmentDemandProps {
+  selectedDate: Date;
+}
+
 interface Department {
   name: string;
   scheduled: number;
@@ -21,88 +25,97 @@ interface Department {
   };
 }
 
-const departments: Department[] = [
+function generateDepartments(date: Date): Department[] {
+  const dayOfWeek = date.getDay();
+  const dateNum = date.getDate();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isFriday = dayOfWeek === 5;
+
+  const baseMultiplier = isWeekend ? 1.2 : isFriday ? 1.1 : 1.0;
+
+  return [
   {
     name: "Housekeeping",
-    scheduled: 24,
-    recommended: 22,
-    demandLevel: 65,
-    demandStatus: "normal",
-    action: { type: "reduce", count: 2 },
+    scheduled: Math.round(20 + dateNum % 5),
+    recommended: Math.round((18 + dateNum % 4) * baseMultiplier),
+    demandLevel: Math.round(55 + (isWeekend ? 15 : 0) + dateNum % 10),
+    demandStatus: isWeekend ? "medium" : "normal",
+    action: isWeekend ? { type: "add", count: 2 } : { type: "reduce", count: 2 },
     details: {
       peakHours: "9:00 AM - 2:00 PM",
       keyInsights: [
-        "45 early checkouts (before 9am)",
-        "28 late checkouts (after 2pm)",
-        "15 DND patterns expected",
+        `${35 + dateNum % 15} early checkouts (before 9am)`,
+        `${20 + dateNum % 12} late checkouts (after 2pm)`,
+        `${10 + dateNum % 8} DND patterns expected`,
       ],
     },
   },
   {
     name: "Food & Beverage",
-    scheduled: 18,
-    recommended: 21,
-    demandLevel: 92,
-    demandStatus: "high",
-    action: { type: "add", count: 3 },
+    scheduled: Math.round(16 + dateNum % 4),
+    recommended: Math.round((18 + (isWeekend ? 5 : 2)) * baseMultiplier),
+    demandLevel: Math.round(70 + (isWeekend ? 22 : isFriday ? 15 : 5) + dateNum % 8),
+    demandStatus: isWeekend || isFriday ? "high" : "medium",
+    action: { type: "add", count: isWeekend ? 4 : isFriday ? 3 : 1 },
     details: {
       peakHours: "7:00 PM - 10:00 PM",
       keyInsights: [
-        "180 high F&B users (56%)",
-        "120 restaurant reservations",
-        "85 room service orders predicted",
+        `${150 + dateNum * 3} high F&B users (${50 + dateNum % 10}%)`,
+        `${100 + dateNum * 2} restaurant reservations`,
+        `${70 + dateNum} room service orders predicted`,
       ],
     },
   },
   {
     name: "Front Office",
     scheduled: 8,
-    recommended: 8,
-    demandLevel: 70,
+    recommended: Math.round(7 + (isWeekend ? 2 : 1)),
+    demandLevel: Math.round(60 + (isWeekend ? 15 : 5) + dateNum % 10),
     demandStatus: "normal",
     action: { type: "standard" },
     details: {
       peakHours: "2:00 PM - 6:00 PM",
       keyInsights: [
-        "142 arrivals expected",
-        "38 VIP check-ins requiring GM presence",
+        `${120 + dateNum * 2} arrivals expected`,
+        `${30 + dateNum % 10} VIP check-ins requiring GM presence`,
         "Peak arrival window: 3-5pm",
       ],
     },
   },
   {
     name: "Spa & Recreation",
-    scheduled: 6,
-    recommended: 7,
-    demandLevel: 78,
-    demandStatus: "medium",
-    action: { type: "add", count: 1 },
+    scheduled: Math.round(5 + dateNum % 2),
+    recommended: Math.round((6 + (isWeekend ? 2 : 1)) * baseMultiplier),
+    demandLevel: Math.round(65 + (isWeekend ? 18 : 8) + dateNum % 10),
+    demandStatus: isWeekend ? "high" : "medium",
+    action: { type: "add", count: isWeekend ? 2 : 1 },
     details: {
       peakHours: "10:00 AM - 4:00 PM",
       keyInsights: [
-        "95 guests with spa history (30%)",
-        "40 pre-booked appointments",
-        "15-20 walk-ins expected",
+        `${80 + dateNum} guests with spa history (${25 + dateNum % 8}%)`,
+        `${35 + dateNum % 10} pre-booked appointments`,
+        `${12 + dateNum % 8}-${18 + dateNum % 8} walk-ins expected`,
       ],
     },
   },
   {
     name: "Concierge",
     scheduled: 4,
-    recommended: 4,
-    demandLevel: 55,
+    recommended: Math.round(4 + (isWeekend ? 1 : 0)),
+    demandLevel: Math.round(45 + (isWeekend ? 15 : 5) + dateNum % 10),
     demandStatus: "normal",
-    action: { type: "standard" },
+    action: isWeekend ? { type: "add", count: 1 } : { type: "standard" },
     details: {
       peakHours: "10:00 AM - 8:00 PM",
       keyInsights: [
-        "25 high-touch guests",
-        "35 theater/restaurant requests likely",
-        "18 transport arrangements",
+        `${20 + dateNum % 8} high-touch guests`,
+        `${30 + dateNum % 10} theater/restaurant requests likely`,
+        `${15 + dateNum % 5} transport arrangements`,
       ],
     },
   },
 ];
+}
 
 function DemandBar({ level, status }: { level: number; status: string }) {
   const colors = {
@@ -141,8 +154,9 @@ function ActionBadge({ action }: { action: Department["action"] }) {
   );
 }
 
-export default function DepartmentDemand() {
+export default function DepartmentDemand({ selectedDate }: DepartmentDemandProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const departments = generateDepartments(selectedDate);
 
   return (
     <Card>

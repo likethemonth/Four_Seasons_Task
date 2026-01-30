@@ -12,74 +12,90 @@ import {
   Repeat,
 } from "lucide-react";
 
-interface GuestStat {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  percentage?: number;
-  trend?: "up" | "down";
+interface GuestIntelligenceProps {
+  selectedDate: Date;
 }
 
-const guestStats: GuestStat[] = [
-  {
-    icon: <UtensilsCrossed size={18} />,
-    label: "High F&B Users",
-    value: "180 guests",
-    percentage: 56,
-  },
-  {
-    icon: <Sparkles size={18} />,
-    label: "Spa History",
-    value: "95 guests",
-    percentage: 30,
-  },
-  {
-    icon: <Clock size={18} />,
-    label: "Early Checkout Pattern",
-    value: "45 rooms",
-  },
-  {
-    icon: <Clock size={18} />,
-    label: "Late Checkout Pattern",
-    value: "28 rooms",
-  },
-  {
-    icon: <Baby size={18} />,
-    label: "Families with Children",
-    value: "12 families",
-  },
-  {
-    icon: <Leaf size={18} />,
-    label: "Dietary Restrictions",
-    value: "20 guests",
-  },
-  {
-    icon: <Plane size={18} />,
-    label: "Business Travelers",
-    value: "68 guests",
-    percentage: 48,
-  },
-  {
-    icon: <Repeat size={18} />,
-    label: "Repeat Guests",
-    value: "112 guests",
-    percentage: 35,
-  },
-];
+function generateGuestData(date: Date) {
+  const dayOfWeek = date.getDay();
+  const dateNum = date.getDate();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-const guestSegments = [
-  { label: "Leisure", value: 52, color: "bg-[#2E7D32]" },
-  { label: "Business", value: 48, color: "bg-[#0288D1]" },
-];
+  const baseGuests = 280 + (isWeekend ? 40 : 0) + (dateNum % 30);
+  const fbUsers = Math.round(baseGuests * (0.55 + (dateNum % 5) * 0.01));
+  const spaGuests = Math.round(baseGuests * (0.28 + (isWeekend ? 0.08 : 0) + (dateNum % 3) * 0.01));
 
-const loyaltyBreakdown = [
-  { tier: "Elite", count: 8, color: "bg-black" },
-  { tier: "Preferred", count: 22, color: "bg-gray-700" },
-  { tier: "VIP", count: 8, color: "bg-gray-500" },
-  { tier: "First Stay", count: 104, color: "bg-gray-300" },
-];
+  const guestStats = [
+    {
+      icon: <UtensilsCrossed size={18} />,
+      label: "High F&B Users",
+      value: `${fbUsers} guests`,
+      percentage: Math.round((fbUsers / baseGuests) * 100),
+    },
+    {
+      icon: <Sparkles size={18} />,
+      label: "Spa History",
+      value: `${spaGuests} guests`,
+      percentage: Math.round((spaGuests / baseGuests) * 100),
+    },
+    {
+      icon: <Clock size={18} />,
+      label: "Early Checkout Pattern",
+      value: `${35 + (dateNum % 15)} rooms`,
+    },
+    {
+      icon: <Clock size={18} />,
+      label: "Late Checkout Pattern",
+      value: `${20 + (isWeekend ? 12 : 0) + (dateNum % 10)} rooms`,
+    },
+    {
+      icon: <Baby size={18} />,
+      label: "Families with Children",
+      value: `${8 + (isWeekend ? 8 : 0) + (dateNum % 6)} families`,
+    },
+    {
+      icon: <Leaf size={18} />,
+      label: "Dietary Restrictions",
+      value: `${15 + (dateNum % 10)} guests`,
+    },
+    {
+      icon: <Plane size={18} />,
+      label: "Business Travelers",
+      value: `${isWeekend ? 30 + (dateNum % 10) : 60 + (dateNum % 15)} guests`,
+      percentage: isWeekend ? 25 + (dateNum % 8) : 45 + (dateNum % 10),
+    },
+    {
+      icon: <Repeat size={18} />,
+      label: "Repeat Guests",
+      value: `${100 + (dateNum % 20)} guests`,
+      percentage: 32 + (dateNum % 8),
+    },
+  ];
 
-export default function GuestIntelligence() {
+  const leisurePercent = isWeekend ? 65 + (dateNum % 10) : 48 + (dateNum % 8);
+  const guestSegments = [
+    { label: "Leisure", value: leisurePercent, color: "bg-[#2E7D32]" },
+    { label: "Business", value: 100 - leisurePercent, color: "bg-[#0288D1]" },
+  ];
+
+  const totalLoyalty = 130 + (dateNum % 20);
+  const eliteCount = 6 + (dateNum % 4);
+  const preferredCount = 18 + (dateNum % 8);
+  const vipCount = 6 + (dateNum % 4);
+  const firstStayCount = totalLoyalty - eliteCount - preferredCount - vipCount;
+
+  const loyaltyBreakdown = [
+    { tier: "Elite", count: eliteCount, color: "bg-black" },
+    { tier: "Preferred", count: preferredCount, color: "bg-gray-700" },
+    { tier: "VIP", count: vipCount, color: "bg-gray-500" },
+    { tier: "First Stay", count: firstStayCount, color: "bg-gray-300" },
+  ];
+
+  return { guestStats, guestSegments, loyaltyBreakdown };
+}
+
+export default function GuestIntelligence({ selectedDate }: GuestIntelligenceProps) {
+  const { guestStats, guestSegments, loyaltyBreakdown } = generateGuestData(selectedDate);
   return (
     <Card>
       <CardHeader title="Guest Intelligence" action="View All" />

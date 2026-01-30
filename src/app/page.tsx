@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import AlertBanner from "@/components/dashboard/AlertBanner";
 import DepartmentDemand from "@/components/dashboard/DepartmentDemand";
@@ -8,6 +11,9 @@ import DeploymentChart from "@/components/dashboard/DeploymentChart";
 import DateSelector from "@/components/dashboard/DateSelector";
 
 export default function Dashboard() {
+  // Default to February 15, 2026
+  const [selectedDate, setSelectedDate] = useState(new Date(2026, 1, 15));
+
   return (
     <div>
       {/* Page Header */}
@@ -20,39 +26,39 @@ export default function Dashboard() {
             Guest-informed staffing recommendations for your property
           </p>
         </div>
-        <DateSelector />
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
       {/* Alert Banner */}
-      <AlertBanner />
+      <AlertBanner selectedDate={selectedDate} />
 
       {/* Summary Cards */}
-      <SummaryCards />
+      <SummaryCards selectedDate={selectedDate} />
 
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-3 gap-6">
         {/* Full Width - Deployment Chart */}
         <div className="col-span-3">
-          <DeploymentChart />
+          <DeploymentChart selectedDate={selectedDate} />
         </div>
 
         {/* Left Column - Department Demand (2 cols) */}
         <div className="col-span-2">
-          <DepartmentDemand />
+          <DepartmentDemand selectedDate={selectedDate} />
         </div>
 
         {/* Right Column - Guest Intelligence */}
         <div className="col-span-1">
-          <GuestIntelligence />
+          <GuestIntelligence selectedDate={selectedDate} />
         </div>
 
         {/* Second Row */}
         <div className="col-span-2">
-          <VIPArrivals />
+          <VIPArrivals selectedDate={selectedDate} />
         </div>
 
         <div className="col-span-1">
-          <CostProjection />
+          <CostProjection selectedDate={selectedDate} />
         </div>
       </div>
     </div>
