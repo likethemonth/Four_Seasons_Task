@@ -15,6 +15,7 @@ import {
   ConciergeBell,
   Sparkles,
   DoorOpen,
+  ClipboardList,
 } from "lucide-react";
 
 interface NavItem {
@@ -34,6 +35,7 @@ const navigation: NavSection[] = [
     items: [
       { label: "Dashboard", href: "/", icon: <LayoutDashboard size={18} /> },
       { label: "Guest Intelligence", href: "/guests", icon: <Users size={18} /> },
+      { label: "HK Queue", href: "/housekeeping", icon: <ClipboardList size={18} /> },
     ],
   },
   {

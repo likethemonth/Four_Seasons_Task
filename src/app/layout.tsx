@@ -3,6 +3,7 @@ import { EB_Garamond } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
+import ChatWidget from "@/components/intelligence/ChatWidget";
 
 const ebGaramond = EB_Garamond({
   variable: "--font-display",
@@ -28,6 +29,7 @@ export default function RootLayout({
         <main className="ml-60 mt-24 min-h-[calc(100vh-96px)] p-8">
           {children}
         </main>
+        <ChatWidget />
       </body>
     </html>
   );
