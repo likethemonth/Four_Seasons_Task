@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { EB_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 import OperaHeader from "@/components/layout/OperaHeader";
-import ChatWidget from "@/components/intelligence/ChatWidget";
+import { CopilotProvider } from "@/context/CopilotContext";
+import CopilotSidebar from "@/components/copilot/CopilotSidebar";
+import CopilotTrigger from "@/components/copilot/CopilotTrigger";
 
 const ebGaramond = EB_Garamond({
   variable: "--font-display",
@@ -29,11 +31,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${ebGaramond.variable} ${inter.variable} ${inter.className} antialiased bg-gray-100`}>
-        <OperaHeader />
-        <main className="pt-[168px] min-h-screen">
-          {children}
-        </main>
-        <ChatWidget />
+        <CopilotProvider>
+          <OperaHeader />
+          <main className="pt-[96px] min-h-screen">
+            {children}
+          </main>
+          <CopilotSidebar />
+          <CopilotTrigger />
+        </CopilotProvider>
       </body>
     </html>
   );

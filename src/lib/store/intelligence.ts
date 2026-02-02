@@ -179,3 +179,112 @@ class IntelligenceStore {
 
 // Singleton instance
 export const intelligenceStore = new IntelligenceStore();
+
+// Seed data for demonstration purposes
+const seedData: Array<{
+  parsed: ParsedGuestIntel;
+  capturedBy: string;
+  minutesAgo: number;
+}> = [
+  {
+    parsed: {
+      guestName: 'Mr. Chen',
+      roomNumber: '801',
+      occasion: 'Birthday celebration',
+      dietary: ['gluten-free'],
+      preferences: ['high floor'],
+      requests: ['Birthday cake at turndown'],
+      context: 'Guest mentioned celebrating 50th birthday with family',
+      confidence: 0.95,
+      operaCodes: {
+        dietaryCodes: ['DIET_GF'],
+        preferenceCodes: ['ROOM_HI'],
+        occasionCode: 'OCC_BDAY',
+      },
+    },
+    capturedBy: 'Maria - Concierge',
+    minutesAgo: 5,
+  },
+  {
+    parsed: {
+      guestName: 'Mrs. Rossi',
+      roomNumber: '1205',
+      occasion: 'Anniversary',
+      dietary: ['vegetarian'],
+      preferences: ['champagne'],
+      requests: ['Champagne on arrival', 'Rose petals on bed'],
+      context: '25th wedding anniversary celebration',
+      confidence: 0.92,
+      operaCodes: {
+        dietaryCodes: ['DIET_VEG'],
+        preferenceCodes: ['AMEN_CHMP'],
+        occasionCode: 'OCC_ANNI',
+      },
+    },
+    capturedBy: 'John - Front Desk',
+    minutesAgo: 25,
+  },
+  {
+    parsed: {
+      guestName: 'Dr. Patel',
+      roomNumber: '603',
+      occasion: 'Business trip',
+      dietary: ['nut allergy'],
+      preferences: ['quiet room', 'early checkin'],
+      requests: ['Early checkout at 5am', 'Airport transfer'],
+      context: 'Attending medical conference, needs rest between sessions',
+      confidence: 0.88,
+      operaCodes: {
+        dietaryCodes: ['ALLRG_NUT'],
+        preferenceCodes: ['ROOM_QT', 'AMEN_ECI'],
+        occasionCode: 'OCC_BIZ',
+      },
+    },
+    capturedBy: 'Sarah - Reservations',
+    minutesAgo: 48,
+  },
+  {
+    parsed: {
+      guestName: 'Ms. Garcia',
+      roomNumber: '910',
+      occasion: 'Honeymoon',
+      dietary: ['vegan'],
+      preferences: ['ocean view', 'spa'],
+      requests: ['Couples spa booking', 'Late checkout'],
+      context: 'Newlywed couple, very excited about honeymoon package',
+      confidence: 0.94,
+      operaCodes: {
+        dietaryCodes: ['DIET_VGN'],
+        preferenceCodes: ['ROOM_OV', 'AMEN_SPA'],
+        occasionCode: 'OCC_HNYM',
+      },
+    },
+    capturedBy: 'Michael - Guest Relations',
+    minutesAgo: 72,
+  },
+  {
+    parsed: {
+      guestName: 'Mr. & Mrs. Kim',
+      roomNumber: '1502',
+      occasion: 'Anniversary',
+      dietary: [],
+      preferences: ['extra pillows', 'late checkout'],
+      requests: ['4 extra pillows', 'Late checkout 2pm'],
+      context: '10th anniversary trip, prefer minimal disturbance',
+      confidence: 0.91,
+      operaCodes: {
+        preferenceCodes: ['ROOM_XP', 'AMEN_LCO'],
+        occasionCode: 'OCC_ANNI',
+      },
+    },
+    capturedBy: 'Maria - Concierge',
+    minutesAgo: 95,
+  },
+];
+
+// Initialize seed data with staggered timestamps
+seedData.forEach(({ parsed, capturedBy, minutesAgo }) => {
+  const record = intelligenceStore.add(parsed, capturedBy, 'dashboard');
+  // Override capturedAt to create realistic time distribution
+  record.capturedAt = new Date(Date.now() - minutesAgo * 60 * 1000);
+});

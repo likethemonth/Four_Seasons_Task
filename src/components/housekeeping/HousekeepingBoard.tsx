@@ -17,7 +17,10 @@ import {
   Bed,
   ChevronDown,
   ChevronUp,
+  Sparkles,
+  Info,
 } from "lucide-react";
+import AIOptimizationPanel from "./AIOptimizationPanel";
 import {
   getHotelRooms,
   getRoomsByFloor,
@@ -28,6 +31,7 @@ import {
   type Room,
   type HousekeepingStaff,
 } from "@/lib/data/parkLaneRooms";
+import { useCopilot, type RoomContext } from "@/context/CopilotContext";
 
 // Status color mapping
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -61,6 +65,28 @@ export default function HousekeepingBoard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [expandedFloor, setExpandedFloor] = useState<number | null>(null);
+  const [showAIOptimization, setShowAIOptimization] = useState(false);
+
+  // Copilot integration
+  const { selectRoom, setPageContext } = useCopilot();
+
+  // Set page context on mount
+  useMemo(() => {
+    setPageContext({ page: "housekeeping" });
+  }, [setPageContext]);
+
+  // Handle opening copilot with room context
+  const handleRoomInfo = (room: Room) => {
+    const roomContext: RoomContext = {
+      roomNumber: room.roomNumber,
+      floor: room.floor,
+      category: ROOM_CATEGORIES[room.category]?.label || room.category,
+      status: room.roomStatus,
+      guestName: room.guestName,
+      isVip: room.isVip,
+    };
+    selectRoom(roomContext);
+  };
 
   // Get all rooms
   const allRooms = useMemo(() => getHotelRooms(), []);
@@ -163,6 +189,13 @@ export default function HousekeepingBoard() {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAIOptimization(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm"
+          >
+            <Sparkles size={16} />
+            AI Optimize
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all ${
@@ -312,6 +345,7 @@ export default function HousekeepingBoard() {
             selectedRooms={selectedRooms}
             onToggleSelection={toggleRoomSelection}
             onSelectAll={selectAllRooms}
+            onRoomInfo={handleRoomInfo}
           />
         )}
         {viewMode === "floor" && (
@@ -321,6 +355,7 @@ export default function HousekeepingBoard() {
             onToggleSelection={toggleRoomSelection}
             expandedFloor={expandedFloor}
             onExpandFloor={setExpandedFloor}
+            onRoomInfo={handleRoomInfo}
           />
         )}
         {viewMode === "list" && (
@@ -363,6 +398,11 @@ export default function HousekeepingBoard() {
           VIP
         </span>
       </div>
+
+      {/* AI Optimization Panel */}
+      {showAIOptimization && (
+        <AIOptimizationPanel onClose={() => setShowAIOptimization(false)} />
+      )}
     </div>
   );
 }
@@ -408,11 +448,13 @@ function RoomBoardView({
   selectedRooms,
   onToggleSelection,
   onSelectAll,
+  onRoomInfo,
 }: {
   rooms: Room[];
   selectedRooms: Set<string>;
   onToggleSelection: (roomNumber: string) => void;
   onSelectAll: () => void;
+  onRoomInfo?: (room: Room) => void;
 }) {
   return (
     <div className="p-4">
@@ -434,6 +476,7 @@ function RoomBoardView({
             room={room}
             isSelected={selectedRooms.has(room.roomNumber)}
             onToggle={() => onToggleSelection(room.roomNumber)}
+            onInfo={onRoomInfo ? () => onRoomInfo(room) : undefined}
           />
         ))}
       </div>
@@ -446,24 +489,40 @@ function RoomTile({
   room,
   isSelected,
   onToggle,
+  onInfo,
   compact = false,
 }: {
   room: Room;
   isSelected: boolean;
   onToggle: () => void;
+  onInfo?: () => void;
   compact?: boolean;
 }) {
   const colors = STATUS_COLORS[room.roomStatus] || STATUS_COLORS.dirty;
 
   return (
     <div
-      className={`relative rounded-sm border-2 ${colors.border} ${colors.bg} ${
+      className={`group relative rounded-sm border-2 ${colors.border} ${colors.bg} ${
         compact ? "p-1.5" : "p-2"
       } cursor-pointer transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
       onClick={onToggle}
     >
+      {/* Info button */}
+      {onInfo && !compact && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onInfo();
+          }}
+          className="absolute top-1 left-1 p-0.5 rounded hover:bg-white/50 transition-colors opacity-0 group-hover:opacity-100"
+          title="View in Copilot"
+        >
+          <Sparkles size={12} className="text-gray-500" />
+        </button>
+      )}
+
       {/* VIP Badge */}
       {room.isVip && (
         <div className="absolute -top-1 -right-1">
@@ -518,12 +577,14 @@ function FloorPlanView({
   onToggleSelection,
   expandedFloor,
   onExpandFloor,
+  onRoomInfo,
 }: {
   rooms: Room[];
   selectedRooms: Set<string>;
   onToggleSelection: (roomNumber: string) => void;
   expandedFloor: number | null;
   onExpandFloor: (floor: number | null) => void;
+  onRoomInfo?: (room: Room) => void;
 }) {
   const floors = [9, 8, 7, 6, 5, 4, 3, 2]; // Top to bottom
 
@@ -597,6 +658,7 @@ function FloorPlanView({
                             room={room}
                             isSelected={selectedRooms.has(room.roomNumber)}
                             onToggle={() => onToggleSelection(room.roomNumber)}
+                            onInfo={onRoomInfo ? () => onRoomInfo(room) : undefined}
                             compact
                           />
                         ))}

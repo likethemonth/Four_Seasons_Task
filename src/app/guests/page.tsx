@@ -248,7 +248,7 @@ export default function GuestsPage() {
   };
 
   return (
-    <div>
+    <div className="px-6">
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
@@ -287,18 +287,18 @@ export default function GuestsPage() {
       {/* Intelligence Hub Tab */}
       {activeTab === "intelligence" && (
         <div className="grid grid-cols-3 gap-6">
-          {/* Left Column - Quick Capture + Feed */}
+          {/* Left Column - VIP Touchpoints */}
+          <div className="col-span-2">
+            <VIPTouchpoints />
+          </div>
+
+          {/* Right Column - Staff Intelligence Feed + Quick Capture */}
           <div className="col-span-1 space-y-6">
-            <QuickCapture />
             <IntelligenceFeed
               maxItems={8}
               onSelectGuest={handleSelectGuestFromFeed}
             />
-          </div>
-
-          {/* Right Column - VIP Touchpoints */}
-          <div className="col-span-2">
-            <VIPTouchpoints />
+            <QuickCapture />
           </div>
         </div>
       )}
