@@ -8,6 +8,7 @@ import QuickCapture from "@/components/intelligence/QuickCapture";
 import VIPTouchpoints from "@/components/intelligence/VIPTouchpoints";
 import CommunicationLog from "@/components/intelligence/CommunicationLog";
 import GuestDetailModal from "@/components/intelligence/GuestDetailModal";
+import GuestProfilePanel from "@/components/guests/GuestProfilePanel";
 import {
   Users,
   Crown,
@@ -24,6 +25,7 @@ import {
   Gift,
   Mail,
   Phone,
+  UserCircle,
 } from "lucide-react";
 
 type Loyalty = "ELITE" | "PREFERRED" | "VIP" | "FIRST";
@@ -184,7 +186,7 @@ export default function GuestsPage() {
   const [vipOnly, setVipOnly] = useState(false);
   const [segment, setSegment] = useState<string>("ALL");
   const [page, setPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"arrivals" | "intelligence" | "communications">("intelligence");
+  const [activeTab, setActiveTab] = useState<"arrivals" | "intelligence" | "communications" | "profile">("intelligence");
   const [selectedGuest, setSelectedGuest] = useState<GuestRow | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | undefined>(undefined);
   const pageSize = 25;
@@ -267,6 +269,7 @@ export default function GuestsPage() {
         {[
           { id: "intelligence", label: "Intelligence Hub", icon: <MessageSquare size={16} /> },
           { id: "arrivals", label: "Arriving Guests", icon: <Users size={16} /> },
+          { id: "profile", label: "Guest Profile", icon: <UserCircle size={16} /> },
           { id: "communications", label: "Communications", icon: <Mail size={16} /> },
         ].map((tab) => (
           <button
@@ -489,6 +492,11 @@ export default function GuestsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Guest Profile Tab */}
+      {activeTab === "profile" && (
+        <GuestProfilePanel />
       )}
 
       {/* Communications Tab */}

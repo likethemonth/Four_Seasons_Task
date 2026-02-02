@@ -420,25 +420,25 @@ function StatCard({
   color: string;
   icon?: React.ReactNode;
 }) {
-  const colorClasses: Record<string, string> = {
-    gray: "bg-white border-gray-200",
-    green: "bg-green-50 border-green-200 text-green-700",
-    emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
-    red: "bg-red-50 border-red-200 text-red-700",
-    yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
-    blue: "bg-blue-50 border-blue-200 text-blue-700",
-    purple: "bg-purple-50 border-purple-200 text-purple-700",
-    orange: "bg-orange-50 border-orange-200 text-orange-700",
-    amber: "bg-amber-50 border-amber-200 text-amber-700",
+  const valueColor: Record<string, string> = {
+    gray: "text-gray-700",
+    green: "text-green-700",
+    emerald: "text-emerald-700",
+    red: "text-red-700",
+    yellow: "text-yellow-700",
+    blue: "text-blue-700",
+    purple: "text-purple-700",
+    orange: "text-orange-700",
+    amber: "text-amber-700",
   };
 
   return (
-    <div className={`border rounded-sm p-2 text-center ${colorClasses[color]}`}>
+    <div className="border border-gray-200 rounded-sm p-2 text-center bg-white">
       <div className="flex items-center justify-center gap-1">
         {icon}
-        <span className="text-[18px] font-semibold">{value}</span>
+        <span className={`text-[18px] font-semibold ${valueColor[color] || "text-gray-700"}`}>{value}</span>
       </div>
-      <div className="text-[10px] uppercase tracking-wider opacity-80">{label}</div>
+      <div className="text-[10px] uppercase tracking-wider text-gray-500">{label}</div>
     </div>
   );
 }
@@ -619,19 +619,19 @@ function FloorPlanView({
               </div>
               <div className="flex items-center gap-4">
                 {/* Floor Stats */}
-                <div className="flex items-center gap-3 text-[11px]">
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded">
+              <div className="flex items-center gap-3 text-[11px]">
+                  <span className="px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded">
                     {summary.clean + summary.inspected} Clean
                   </span>
-                  <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded">
+                  <span className="px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded">
                     {summary.dirty} Dirty
                   </span>
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                  <span className="px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded">
                     {summary.occupied} Occ
                   </span>
                   {summary.vip > 0 && (
-                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded flex items-center gap-1">
-                      <Star size={10} />
+                    <span className="px-2 py-0.5 bg-white border border-gray-200 text-gray-700 rounded flex items-center gap-1">
+                      <Star size={10} className="text-amber-600" />
                       {summary.vip} VIP
                     </span>
                   )}
