@@ -214,12 +214,10 @@ export default function OperaHeader() {
             {/* Logo and Title */}
             <div className="flex items-center gap-4">
               <Image
-                src="/images/fs-tree.svg"
+                src="/images/four-seasons-logo.png"
                 alt="Four Seasons"
-                width={36}
-                height={50}
-                className="text-white"
-                style={{ filter: 'invert(1)' }}
+                width={40}
+                height={40}
               />
               <span className="font-display text-[20px] font-normal text-white tracking-[0.2em]">
                 FOUR SEASONS
