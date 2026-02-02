@@ -42,7 +42,7 @@ export default function CopilotTrigger() {
       {/* Tooltip */}
       {showTooltip && (
         <div className="fixed bottom-24 right-6 z-50 animate-fade-in">
-          <div className="bg-black text-white px-3 py-2 rounded-lg shadow-lg text-[12px] max-w-[200px]">
+          <div className="bg-[#1a1a1a] text-white px-3 py-2 rounded-lg shadow-lg text-[12px] max-w-[200px]">
             <div className="flex items-center justify-between gap-2 mb-1">
               <span className="font-medium">Try Copilot</span>
               <button
@@ -59,7 +59,7 @@ export default function CopilotTrigger() {
               Press <kbd className="px-1 py-0.5 bg-gray-700 rounded">⌘K</kbd> to toggle
             </div>
             {/* Arrow */}
-            <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black" />
+            <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[#1a1a1a]" />
           </div>
         </div>
       )}
@@ -68,14 +68,14 @@ export default function CopilotTrigger() {
       <button
         onClick={toggle}
         onMouseEnter={() => setShowTooltip(false)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-lg hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 group"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a1a1a] shadow-lg hover:bg-[#2a2a2a] transition-all hover:scale-105 active:scale-95 group"
         aria-label="Open Copilot"
       >
         <Sparkles size={24} className="text-white group-hover:animate-pulse" />
 
         {/* Keyboard hint on hover */}
         <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <div className="bg-gray-900 text-white px-2 py-1 rounded text-[10px] whitespace-nowrap">
+          <div className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-[10px] whitespace-nowrap">
             ⌘K
           </div>
         </div>

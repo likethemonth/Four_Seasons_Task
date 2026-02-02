@@ -313,10 +313,10 @@ export default function CopilotSidebar() {
   // Minimized state - just icon bar
   if (isMinimized) {
     return (
-      <div className="fixed right-0 top-[96px] bottom-0 w-12 bg-black flex flex-col items-center py-4 z-40 shadow-lg">
+      <div className="fixed right-0 top-[96px] bottom-0 w-12 bg-[#1a1a1a] flex flex-col items-center py-4 z-40 shadow-lg">
         <button
           onClick={() => setIsMinimized(false)}
-          className="p-2 hover:bg-gray-800 rounded transition-colors mb-4"
+          className="p-2 hover:bg-gray-700 rounded transition-colors mb-4"
         >
           <ChevronLeft size={20} className="text-white" />
         </button>
@@ -327,7 +327,7 @@ export default function CopilotSidebar() {
               setActiveTab("arrivals");
             }}
             className={`p-2 rounded transition-colors ${
-              activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-800"
+              activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-700"
             }`}
           >
             <Users size={18} className="text-white" />
@@ -338,7 +338,7 @@ export default function CopilotSidebar() {
               setActiveTab("chat");
             }}
             className={`p-2 rounded transition-colors ${
-              activeTab === "chat" ? "bg-white/20" : "hover:bg-gray-800"
+              activeTab === "chat" ? "bg-white/20" : "hover:bg-gray-700"
             }`}
           >
             <MessageSquare size={18} className="text-white" />
@@ -349,7 +349,7 @@ export default function CopilotSidebar() {
               setActiveTab("housekeeping");
             }}
             className={`p-2 rounded transition-colors ${
-              activeTab === "housekeeping" ? "bg-white/20" : "hover:bg-gray-800"
+              activeTab === "housekeeping" ? "bg-white/20" : "hover:bg-gray-700"
             }`}
           >
             <Building2 size={18} className="text-white" />
@@ -365,7 +365,7 @@ export default function CopilotSidebar() {
   return (
     <div className="fixed right-0 top-[96px] bottom-0 w-[400px] bg-white border-l border-gray-200 shadow-xl z-40 flex flex-col">
       {/* Header */}
-      <div className="bg-black px-4 py-3 flex items-center justify-between">
+      <div className="bg-[#1a1a1a] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-white" />
           <span className="text-[14px] font-semibold text-white">Copilot</span>
@@ -378,11 +378,11 @@ export default function CopilotSidebar() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
           >
             <ChevronRight size={16} className="text-white" />
           </button>
-          <button onClick={close} className="p-1.5 hover:bg-gray-800 rounded transition-colors">
+          <button onClick={close} className="p-1.5 hover:bg-gray-700 rounded transition-colors">
             <X size={16} className="text-white" />
           </button>
         </div>
@@ -631,7 +631,7 @@ function GuestDetailView({
         <div className="space-y-1">
           {guest.predictedNeeds.map((need, idx) => (
             <div key={idx} className="flex items-center gap-2 text-[12px] text-gray-700">
-              <TrendingUp size={12} className="text-black" />
+              <TrendingUp size={12} className="text-gray-500" />
               {need}
             </div>
           ))}
@@ -797,7 +797,7 @@ function ChatView({
                 <div
                   className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${
                     msg.role === "user"
-                      ? "bg-black text-white"
+                      ? "bg-[#1a1a1a] text-white"
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
@@ -853,7 +853,7 @@ function ChatView({
           <button
             onClick={onSend}
             disabled={!chatInput.trim() || isSending}
-            className="rounded bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:bg-gray-300 transition-colors"
+            className="rounded bg-[#1a1a1a] px-4 py-2 text-white hover:bg-[#2a2a2a] disabled:bg-gray-300 transition-colors"
           >
             <Send size={16} />
           </button>
