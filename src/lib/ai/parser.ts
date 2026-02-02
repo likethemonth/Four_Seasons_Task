@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ParsedGuestIntel } from './types';
+import { enrichWithOperaCodes } from './types';
 import { GUEST_INTEL_SYSTEM_PROMPT, createGuestIntelPrompt } from './prompts';
 
 let anthropicClient: Anthropic | null = null;
@@ -47,7 +48,7 @@ export async function parseGuestIntelligence(
   const parsed = JSON.parse(jsonMatch[0]) as ParsedGuestIntel;
 
   // Ensure required fields have defaults
-  return {
+  const result: ParsedGuestIntel = {
     guestName: parsed.guestName || 'Unknown Guest',
     roomNumber: parsed.roomNumber || '',
     occasion: parsed.occasion,
@@ -57,6 +58,9 @@ export async function parseGuestIntelligence(
     context: parsed.context,
     confidence: parsed.confidence ?? 0.5,
   };
+
+  // Enrich with OPERA PMS codes for compatibility
+  return enrichWithOperaCodes(result);
 }
 
 /**
@@ -193,5 +197,6 @@ export function parseGuestIntelligenceMock(message: string): ParsedGuestIntel {
 
   result.confidence = Math.min(0.95, 0.5 + infoCount * 0.1);
 
-  return result;
+  // Enrich with OPERA PMS codes for compatibility
+  return enrichWithOperaCodes(result);
 }

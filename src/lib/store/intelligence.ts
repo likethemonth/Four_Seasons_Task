@@ -1,8 +1,36 @@
 import type { GuestIntelligence, ParsedGuestIntel } from '@/lib/ai/types';
 
 /**
+ * Parse guest name into OPERA name components.
+ */
+function parseNameComponents(fullName: string): {
+  nameTitle?: string;
+  nameFirst?: string;
+  nameLast?: string;
+} {
+  const titleMatch = fullName.match(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Mr & Mrs\.)\s*/i);
+  const nameTitle = titleMatch?.[1];
+  const nameWithoutTitle = titleMatch
+    ? fullName.slice(titleMatch[0].length)
+    : fullName;
+
+  const nameParts = nameWithoutTitle.trim().split(/\s+/);
+  if (nameParts.length >= 2) {
+    return {
+      nameTitle,
+      nameFirst: nameParts.slice(0, -1).join(' '),
+      nameLast: nameParts[nameParts.length - 1],
+    };
+  }
+  return {
+    nameTitle,
+    nameLast: nameParts[0] || undefined,
+  };
+}
+
+/**
  * In-memory store for guest intelligence data.
- * In production, this would be replaced with a database.
+ * In production, this would be replaced with OPERA PMS database.
  */
 class IntelligenceStore {
   private items: Map<string, GuestIntelligence> = new Map();
@@ -11,12 +39,17 @@ class IntelligenceStore {
 
   /**
    * Add a new guest intelligence record.
+   * Automatically enriches with OPERA PMS compatible fields.
    */
   add(
     parsed: ParsedGuestIntel,
-    capturedBy: string
+    capturedBy: string,
+    source: GuestIntelligence['source'] = 'telegram'
   ): GuestIntelligence {
     const id = `intel_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    // Parse name into OPERA components
+    const nameComponents = parseNameComponents(parsed.guestName);
 
     const record: GuestIntelligence = {
       id,
@@ -29,8 +62,42 @@ class IntelligenceStore {
       context: parsed.context,
       capturedBy,
       capturedAt: new Date(),
-      source: 'telegram',
+      source,
       confidence: parsed.confidence,
+
+      // OPERA PMS compatible fields
+      opera: {
+        ...nameComponents,
+        dietaryCodes: parsed.operaCodes?.dietaryCodes,
+        preferenceCodes: parsed.operaCodes?.preferenceCodes,
+        occasionCode: parsed.operaCodes?.occasionCode,
+        specialRequests: [
+          // Convert dietary to special requests
+          ...(parsed.operaCodes?.dietaryCodes || []).map((code) => ({
+            code,
+            description: parsed.dietary?.find(
+              (d) => code.includes(d.toUpperCase().replace(/[- ]/g, '_'))
+            ) || code,
+            category: 'DIETARY' as const,
+          })),
+          // Convert preferences to special requests
+          ...(parsed.operaCodes?.preferenceCodes || []).map((code) => ({
+            code,
+            description: parsed.preferences?.find(
+              (p) => code.includes(p.toUpperCase().replace(/[- ]/g, '_'))
+            ) || code,
+            category: 'ROOM' as const,
+          })),
+          // Add occasion if present
+          ...(parsed.operaCodes?.occasionCode
+            ? [{
+                code: parsed.operaCodes.occasionCode,
+                description: parsed.occasion || '',
+                category: 'OCCASION' as const,
+              }]
+            : []),
+        ],
+      },
     };
 
     this.items.set(id, record);

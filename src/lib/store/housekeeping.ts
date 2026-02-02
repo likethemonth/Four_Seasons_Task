@@ -1,18 +1,46 @@
-import type { HousekeepingTask, TaskStatus } from '@/lib/housekeeping/types';
+import type {
+  HousekeepingTask,
+  TaskStatus,
+  OperaVipCode,
+  ROOM_TYPE_TO_OPERA,
+  STATUS_TO_OPERA,
+} from '@/lib/housekeeping/types';
 import {
   calculatePriority,
   getPriorityLevel,
 } from '@/lib/housekeeping/priority';
 
+// Import the mapping constants
+const ROOM_TYPE_OPERA_MAP: Record<string, string> = {
+  suite: 'SUI',
+  deluxe: 'DLX',
+  standard: 'STD',
+};
+
+const STATUS_OPERA_MAP: Record<TaskStatus, string> = {
+  pending: 'DI',
+  assigned: 'DI',
+  in_progress: 'PU',
+  complete: 'IP',
+};
+
+/**
+ * Map boolean VIP flag to OPERA VIP code.
+ */
+function mapVipToOperaCode(isVip: boolean): OperaVipCode {
+  return isVip ? 'VIP1' : '';
+}
+
 /**
  * In-memory store for housekeeping queue.
- * In production, this would be replaced with a database.
+ * In production, this would be replaced with OPERA PMS integration.
  */
 class HousekeepingStore {
   private tasks: Map<string, HousekeepingTask> = new Map();
 
   /**
    * Add a new room to the housekeeping queue.
+   * Automatically enriches with OPERA PMS compatible fields.
    */
   addRoom(input: {
     roomNumber: string;
@@ -22,6 +50,10 @@ class HousekeepingStore {
     nextArrival?: Date;
     nextGuestVip?: boolean;
     nextGuestPreferences?: string[];
+    // Optional OPERA fields for direct integration
+    operaRoomId?: number;
+    operaResvNameId?: number;
+    operaVipCode?: OperaVipCode;
   }): HousekeepingTask {
     const id = `hk_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -43,6 +75,17 @@ class HousekeepingStore {
       priority,
       priorityLevel: getPriorityLevel(priority),
       status: 'pending',
+
+      // OPERA PMS compatible fields
+      opera: {
+        roomId: input.operaRoomId,
+        resvNameId: input.operaResvNameId,
+        roomStatus: 'VAC',  // Vacant after checkout
+        foStatus: 'VAC',
+        hkStatus: 'DI',     // Dirty - needs cleaning
+        roomClass: ROOM_TYPE_OPERA_MAP[input.roomType] as 'SUI' | 'DLX' | 'STD',
+        vipCode: input.operaVipCode || mapVipToOperaCode(input.nextGuestVip ?? false),
+      },
     };
 
     this.tasks.set(id, task);
@@ -94,24 +137,46 @@ class HousekeepingStore {
 
   /**
    * Assign task to housekeepers.
+   * Optionally accepts OPERA attendant ID for PMS sync.
    */
-  assign(taskId: string, housekeeperIds: string[]): HousekeepingTask | undefined {
+  assign(
+    taskId: string,
+    housekeeperIds: string[],
+    operaAttendantId?: number
+  ): HousekeepingTask | undefined {
     const task = this.tasks.get(taskId);
     if (!task) return undefined;
 
     task.assignedTo = housekeeperIds;
     task.status = 'assigned';
+
+    // Sync OPERA fields
+    if (task.opera && operaAttendantId) {
+      task.opera.attendantId = operaAttendantId;
+    }
+
     return task;
   }
 
   /**
    * Update task status.
+   * Automatically syncs OPERA housekeeping status.
    */
   updateStatus(taskId: string, status: TaskStatus): HousekeepingTask | undefined {
     const task = this.tasks.get(taskId);
     if (!task) return undefined;
 
     task.status = status;
+
+    // Sync OPERA housekeeping status
+    if (task.opera) {
+      task.opera.hkStatus = STATUS_OPERA_MAP[status] as 'CL' | 'DI' | 'IP' | 'PU';
+      // Update room status based on housekeeping status
+      if (status === 'complete') {
+        task.opera.roomStatus = 'IP';  // Inspected
+      }
+    }
+
     return task;
   }
 
