@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${ebGaramond.variable} ${inter.variable} ${inter.className} antialiased bg-gray-100`}>
         <OperaHeader />
-        <main className="pt-[160px] min-h-screen">
+        <main className="pt-[176px] min-h-screen">
           {children}
         </main>
         <ChatWidget />

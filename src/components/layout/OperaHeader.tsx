@@ -195,7 +195,7 @@ export default function OperaHeader() {
   return (
     <>
       {/* Top Header Bar - Dark */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex h-12 items-center justify-between bg-[#1a1a1a] px-4">
+      <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between bg-[#1a1a1a] px-4">
         <div className="flex items-center gap-4">
           {/* Hamburger Menu */}
           <button
@@ -214,8 +214,8 @@ export default function OperaHeader() {
             <Image
               src="/images/four-seasons-logo.svg"
               alt="Four Seasons"
-              width={44}
-              height={44}
+              width={56}
+              height={56}
               className="brightness-0 invert"
             />
             <span className="font-display text-[18px] font-medium text-white tracking-[0.15em]">
@@ -265,7 +265,7 @@ export default function OperaHeader() {
       </header>
 
       {/* Navigation Bar - Black */}
-      <nav className="fixed top-12 left-0 right-0 z-40 flex h-10 items-center bg-[#2a2a2a] px-4" ref={dropdownRef}>
+      <nav className="fixed top-16 left-0 right-0 z-40 flex h-10 items-center bg-[#2a2a2a] px-4" ref={dropdownRef}>
         <div className="flex items-center gap-1">
 
           {/* Navigation Dropdowns */}
@@ -317,7 +317,7 @@ export default function OperaHeader() {
       </nav>
 
       {/* Breadcrumb Bar */}
-      <div className="fixed top-[88px] left-0 right-0 z-30 flex h-8 items-center justify-between bg-gray-100 border-b border-gray-200 px-4">
+      <div className="fixed top-[104px] left-0 right-0 z-30 flex h-8 items-center justify-between bg-gray-100 border-b border-gray-200 px-4">
         <div className="text-[12px] text-gray-600">
           {getBreadcrumb()}
         </div>
@@ -331,7 +331,7 @@ export default function OperaHeader() {
       </div>
 
       {/* Page Title Bar */}
-      <div className="fixed top-[120px] left-0 right-0 z-20 flex h-10 items-center justify-between bg-white border-b border-gray-200 px-4">
+      <div className="fixed top-[136px] left-0 right-0 z-20 flex h-10 items-center justify-between bg-white border-b border-gray-200 px-4">
         <h1 className="text-[16px] font-medium text-gray-900">
           {pathname === "/" && "Dashboard"}
           {pathname === "/guests" && "Guest Intelligence"}
@@ -365,7 +365,7 @@ export default function OperaHeader() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-[88px] bottom-0 w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
+        className={`fixed left-0 top-[104px] bottom-0 w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
