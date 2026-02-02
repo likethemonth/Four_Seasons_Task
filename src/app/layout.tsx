@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { EB_Garamond } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Sidebar from "@/components/layout/Sidebar";
+import OperaHeader from "@/components/layout/OperaHeader";
 import ChatWidget from "@/components/intelligence/ChatWidget";
 
 const ebGaramond = EB_Garamond({
@@ -23,10 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${ebGaramond.variable} antialiased`}>
-        <Header />
-        <Sidebar />
-        <main className="ml-60 mt-24 min-h-[calc(100vh-96px)] p-8">
+      <body className={`${ebGaramond.variable} antialiased bg-gray-100`}>
+        <OperaHeader />
+        <main className="pt-[160px] min-h-screen">
           {children}
         </main>
         <ChatWidget />

@@ -11,6 +11,7 @@ import {
   FileText,
   Users,
   Building2,
+  Cog,
 } from "lucide-react";
 
 type TabType = "board" | "queue" | "reports" | "settings";
@@ -19,81 +20,72 @@ export default function HousekeepingPage() {
   const [activeTab, setActiveTab] = useState<TabType>("board");
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-[20px] font-semibold text-gray-900">
-                Housekeeping Management
-              </h1>
-              <p className="text-[13px] text-gray-500">
-                OPERA-compatible room status board with priority scoring
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-[12px] text-gray-500">
-              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-sm">
-                System Online
-              </span>
-              <span>
-                Last sync: {new Date().toLocaleTimeString()}
-              </span>
-            </div>
+    <div className="min-h-screen">
+      {/* Sub-Header with Tabs */}
+      <div className="bg-white border-b border-gray-200 px-4">
+        <div className="flex items-center justify-between py-2">
+          <div className="flex items-center gap-2 text-[12px] text-gray-500">
+            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-sm">
+              System Online
+            </span>
+            <span>Last sync: {new Date().toLocaleTimeString()}</span>
           </div>
+          <button className="p-1.5 hover:bg-gray-100 rounded">
+            <Cog size={16} className="text-gray-500" />
+          </button>
+        </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex gap-1 mt-4">
-            <button
-              onClick={() => setActiveTab("board")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-sm text-[13px] font-medium transition-all ${
-                activeTab === "board"
-                  ? "bg-gray-100 text-gray-900 border-t border-l border-r border-gray-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <LayoutDashboard size={16} />
-              Room Board
-            </button>
-            <button
-              onClick={() => setActiveTab("queue")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-sm text-[13px] font-medium transition-all ${
-                activeTab === "queue"
-                  ? "bg-gray-100 text-gray-900 border-t border-l border-r border-gray-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <ClipboardList size={16} />
-              Task Queue
-            </button>
-            <button
-              onClick={() => setActiveTab("reports")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-sm text-[13px] font-medium transition-all ${
-                activeTab === "reports"
-                  ? "bg-gray-100 text-gray-900 border-t border-l border-r border-gray-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <FileText size={16} />
-              Reports
-            </button>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-sm text-[13px] font-medium transition-all ${
-                activeTab === "settings"
-                  ? "bg-gray-100 text-gray-900 border-t border-l border-r border-gray-200"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <Settings size={16} />
-              Settings
-            </button>
-          </div>
+        {/* Navigation Tabs */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveTab("board")}
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium transition-all border-b-2 ${
+              activeTab === "board"
+                ? "text-[#0d9488] border-[#0d9488]"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            }`}
+          >
+            <LayoutDashboard size={16} />
+            Room Board
+          </button>
+          <button
+            onClick={() => setActiveTab("queue")}
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium transition-all border-b-2 ${
+              activeTab === "queue"
+                ? "text-[#0d9488] border-[#0d9488]"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            }`}
+          >
+            <ClipboardList size={16} />
+            Task Queue
+          </button>
+          <button
+            onClick={() => setActiveTab("reports")}
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium transition-all border-b-2 ${
+              activeTab === "reports"
+                ? "text-[#0d9488] border-[#0d9488]"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            }`}
+          >
+            <FileText size={16} />
+            Reports
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium transition-all border-b-2 ${
+              activeTab === "settings"
+                ? "text-[#0d9488] border-[#0d9488]"
+                : "text-gray-500 border-transparent hover:text-gray-700"
+            }`}
+          >
+            <Settings size={16} />
+            Settings
+          </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-4">
         {activeTab === "board" && <HousekeepingBoard />}
 
         {activeTab === "queue" && <QueuePanel />}

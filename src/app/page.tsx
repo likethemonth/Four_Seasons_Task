@@ -15,9 +15,9 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 1, 15));
 
   return (
-    <div>
+    <div className="p-6">
       {/* Page Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="font-display text-[34px] font-medium text-black mb-2">
             Daily Demand Overview
