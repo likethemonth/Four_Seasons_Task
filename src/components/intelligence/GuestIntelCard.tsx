@@ -51,10 +51,10 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
   }
 
   return (
-    <div className="mt-4 rounded-sm bg-blue-50 border border-blue-100 p-4">
+    <div className="mt-4 rounded-sm bg-gray-50 border border-gray-200 p-4">
       <div className="flex items-center gap-2 mb-3">
-        <MessageSquare size={16} className="text-blue-600" />
-        <span className="text-[13px] font-semibold uppercase tracking-wider text-blue-700">
+        <MessageSquare size={16} className="text-gray-700" />
+        <span className="text-[13px] font-semibold uppercase tracking-wider text-gray-700">
           Captured Intelligence
         </span>
       </div>
@@ -62,7 +62,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
       <div className="space-y-3">
         {merged.occasions.size > 0 && (
           <div className="flex items-start gap-2">
-            <Gift size={14} className="mt-0.5 text-amber-500" />
+            <Gift size={14} className="mt-0.5 text-gray-600" />
             <div>
               <div className="text-[12px] font-semibold text-gray-500 mb-1">
                 Occasion
@@ -76,7 +76,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
 
         {merged.dietary.size > 0 && (
           <div className="flex items-start gap-2">
-            <Utensils size={14} className="mt-0.5 text-green-600" />
+            <Utensils size={14} className="mt-0.5 text-gray-600" />
             <div>
               <div className="text-[12px] font-semibold text-gray-500 mb-1">
                 Dietary Requirements
@@ -85,7 +85,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
                 {Array.from(merged.dietary).map((item) => (
                   <span
                     key={item}
-                    className="rounded-full bg-green-100 px-2.5 py-0.5 text-[12px] text-green-700"
+                    className="rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-[12px] text-gray-700"
                   >
                     {item}
                   </span>
@@ -97,7 +97,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
 
         {merged.preferences.size > 0 && (
           <div className="flex items-start gap-2">
-            <Heart size={14} className="mt-0.5 text-pink-500" />
+            <Heart size={14} className="mt-0.5 text-gray-600" />
             <div>
               <div className="text-[12px] font-semibold text-gray-500 mb-1">
                 Preferences
@@ -106,7 +106,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
                 {Array.from(merged.preferences).map((item) => (
                   <span
                     key={item}
-                    className="rounded-full bg-pink-100 px-2.5 py-0.5 text-[12px] text-pink-700"
+                    className="rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-[12px] text-gray-700"
                   >
                     {item}
                   </span>
@@ -118,7 +118,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
 
         {merged.requests.size > 0 && (
           <div className="flex items-start gap-2">
-            <Bell size={14} className="mt-0.5 text-purple-500" />
+            <Bell size={14} className="mt-0.5 text-gray-600" />
             <div>
               <div className="text-[12px] font-semibold text-gray-500 mb-1">
                 Service Requests
@@ -132,7 +132,7 @@ export default function GuestIntelCard({ intel }: GuestIntelCardProps) {
       </div>
 
       {/* Source attribution */}
-      <div className="mt-3 pt-3 border-t border-blue-100">
+      <div className="mt-3 pt-3 border-t border-gray-200">
         <div className="text-[11px] text-gray-500">
           {merged.sources.map((source, idx) => (
             <span key={idx}>

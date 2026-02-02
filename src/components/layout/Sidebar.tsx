@@ -79,6 +79,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               onClick={() => setActiveItem(item.href)}
               className={`flex items-center gap-3 px-5 py-3 text-[15px] transition-all ${
                 activeItem === item.href

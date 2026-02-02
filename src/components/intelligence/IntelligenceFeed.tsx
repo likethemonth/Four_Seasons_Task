@@ -128,13 +128,13 @@ export default function IntelligenceFeed({
                 <div className="space-y-1.5 text-[13px]">
                   {record.occasion && (
                     <div className="flex items-center gap-2">
-                      <Gift size={14} className="text-amber-500" />
+                      <Gift size={14} className="text-gray-600" />
                       <span className="text-gray-700">{record.occasion}</span>
                     </div>
                   )}
                   {record.dietary && record.dietary.length > 0 && (
                     <div className="flex items-center gap-2">
-                      <Utensils size={14} className="text-green-600" />
+                      <Utensils size={14} className="text-gray-600" />
                       <span className="text-gray-700">
                         {record.dietary.join(", ")}
                       </span>
@@ -142,7 +142,7 @@ export default function IntelligenceFeed({
                   )}
                   {record.preferences && record.preferences.length > 0 && (
                     <div className="flex items-center gap-2">
-                      <Heart size={14} className="text-pink-500" />
+                      <Heart size={14} className="text-gray-600" />
                       <span className="text-gray-700">
                         {record.preferences.join(", ")}
                       </span>
@@ -150,7 +150,7 @@ export default function IntelligenceFeed({
                   )}
                   {record.requests && record.requests.length > 0 && (
                     <div className="flex items-center gap-2">
-                      <Bell size={14} className="text-purple-500" />
+                      <Bell size={14} className="text-gray-600" />
                       <span className="text-gray-700">
                         {record.requests.join(", ")}
                       </span>

@@ -69,7 +69,7 @@ const STORAGE_KEY = "fs-copilot-messages";
 
 export function CopilotProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<SidebarTab>("arrivals");
+  const [activeTab, setActiveTab] = useState<SidebarTab>("chat");
   const [messages, setMessages] = useState<Message[]>([]);
   const [pageContext, setPageContextState] = useState<PageContext>({
     page: "dashboard",

@@ -41,7 +41,7 @@ interface ChatWidgetProps {
 }
 
 export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [mode, setMode] = useState<"text" | "voice">("text");
   const [records, setRecords] = useState<IntelRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -206,7 +206,7 @@ export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
           <MessageCircle size={24} className="text-white" />
         )}
         {records.length > 0 && !isOpen && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-[11px] font-bold text-white">
             {records.length > 9 ? "9+" : records.length}
           </span>
         )}
@@ -358,7 +358,7 @@ export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
                   <button
                     onClick={startVoiceCall}
                     disabled={isConnecting}
-                    className="flex items-center gap-2 rounded-full bg-green-600 px-6 py-3 text-[14px] font-medium text-white hover:bg-green-700 disabled:bg-gray-300 transition-all"
+                    className="flex items-center gap-2 rounded-full bg-[#1a1a1a] px-6 py-3 text-[14px] font-medium text-white hover:bg-[#2a2a2a] disabled:bg-gray-300 transition-all"
                   >
                     {isConnecting ? (
                       <>
@@ -376,17 +376,13 @@ export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setIsMuted(!isMuted)}
-                      className={`rounded-full p-3 ${
-                        isMuted
-                          ? "bg-red-100 text-red-600"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`rounded-full p-3 ${isMuted ? "bg-gray-200 text-gray-600" : "bg-gray-100 text-gray-600"}`}
                     >
                       {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
                     </button>
                     <button
                       onClick={endVoiceCall}
-                      className="flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-[14px] font-medium text-white hover:bg-red-700"
+                      className="flex items-center gap-2 rounded-full bg-[#1a1a1a] px-5 py-3 text-[14px] font-medium text-white hover:bg-[#2a2a2a]"
                     >
                       <PhoneOff size={18} />
                       End
@@ -398,13 +394,7 @@ export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
               {/* Speaking indicator */}
               {isVoiceConnected && (
                 <div className="flex justify-center mb-4">
-                  <div
-                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-[12px] ${
-                      conversation.isSpeaking
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
+                  <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-[12px] ${conversation.isSpeaking ? "bg-gray-200 text-gray-700" : "bg-gray-100 text-gray-600"}`}>
                     {conversation.isSpeaking ? (
                       <>
                         <Volume2 size={14} className="animate-pulse" />
@@ -446,7 +436,7 @@ export default function ChatWidget({ onNewIntel }: ChatWidgetProps) {
 
               {/* Instructions */}
               {!isVoiceConnected && (
-                <div className="rounded-sm bg-blue-50 border border-blue-100 p-3 text-[11px] text-blue-700">
+                <div className="rounded-sm bg-gray-50 border border-gray-200 p-3 text-[11px] text-gray-700">
                   <div className="font-semibold mb-1">Voice Capture Tips:</div>
                   <ul className="space-y-0.5">
                     <li>• Speak clearly with guest name and room</li>

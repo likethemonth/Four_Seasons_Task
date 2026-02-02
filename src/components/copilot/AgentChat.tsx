@@ -106,7 +106,7 @@ export default function AgentChat({ onTaskPlanGenerated, currentPlan }: AgentCha
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-[#1a1a1a]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -130,9 +130,9 @@ export default function AgentChat({ onTaskPlanGenerated, currentPlan }: AgentCha
               className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                 message.role === "user"
                   ? "bg-gray-200"
-                  : "bg-gradient-to-br from-amber-400 to-orange-500"
-              }`}
-            >
+              : "bg-gray-800"
+            }`}
+          >
               {message.role === "user" ? (
                 <User className="w-4 h-4 text-gray-600" />
               ) : (
@@ -151,7 +151,7 @@ export default function AgentChat({ onTaskPlanGenerated, currentPlan }: AgentCha
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               {message.taskPlan && (
                 <div className="mt-2 pt-2 border-t border-gray-200/50">
-                  <div className="flex items-center gap-1 text-xs text-amber-600">
+                  <div className="flex items-center gap-1 text-xs text-gray-700">
                     <Lightbulb className="w-3 h-3" />
                     <span>Task plan ready for review</span>
                     <ArrowRight className="w-3 h-3" />
@@ -164,7 +164,7 @@ export default function AgentChat({ onTaskPlanGenerated, currentPlan }: AgentCha
 
         {isTyping && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
@@ -207,7 +207,7 @@ export default function AgentChat({ onTaskPlanGenerated, currentPlan }: AgentCha
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask me to do something..."
-            className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-700"
             disabled={isTyping}
           />
           <button

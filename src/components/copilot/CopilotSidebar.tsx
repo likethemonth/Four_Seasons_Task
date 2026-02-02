@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useCopilot, type GuestContext, type RoomContext } from "@/context/CopilotContext";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useCopilot } from "@/context/CopilotContext";
 import {
   X,
   ChevronLeft,
@@ -18,6 +19,7 @@ import {
   Clock,
   TrendingUp,
   CheckCircle,
+  CheckCircle2,
   Bed,
   Utensils,
   Mail,
@@ -25,7 +27,36 @@ import {
   AlertCircle,
   Trash2,
   Loader2,
+  Play,
+  Circle,
+  Zap,
+  ArrowRight,
 } from "lucide-react";
+
+// Step types for agentic workflow visualization
+type StepType = "read" | "write" | "think" | "action" | "notify";
+
+interface AgentTask {
+  id: string;
+  title: string;
+  description: string;
+  status: "pending" | "running" | "completed" | "failed";
+  stepType: StepType;
+  target?: string;
+  result?: string;
+  autoApprove?: boolean;
+  // Navigation actions - the agent will navigate to pages
+  navigateTo?: string | null; // e.g., "/housekeeping", "/guests", "/schedule"
+}
+
+interface TaskPlan {
+  id: string;
+  query: string;
+  reasoning: string;
+  tasks: AgentTask[];
+  status: "pending_approval" | "executing" | "completed" | "cancelled";
+  summary?: string;
+}
 
 // Guest intelligence data type
 interface GuestIntelligence {
@@ -229,6 +260,87 @@ const mockHousekeepingQueue = [
   },
 ];
 
+// Generate task plan from user query with page navigation
+function generateTaskPlan(query: string): TaskPlan | null {
+  const lowerQuery = query.toLowerCase();
+
+  if (lowerQuery.includes("optimize") && (lowerQuery.includes("housekeeping") || lowerQuery.includes("cleaning") || lowerQuery.includes("queue"))) {
+    return {
+      id: `plan_${Date.now()}`,
+      query,
+      reasoning: "I'll analyze the current room inventory, cross-reference with VIP arrival times, and calculate the most efficient cleaning routes to minimize staff travel time.",
+      tasks: [
+        { id: "t1", title: "Read Room Inventory", description: "Fetching current room statuses from OPERA PMS", status: "pending", stepType: "read", target: "OPERA PMS", autoApprove: true, navigateTo: "/housekeeping" },
+        { id: "t2", title: "Read VIP Schedule", description: "Loading today's VIP arrivals and checkout times", status: "pending", stepType: "read", target: "Guest Intelligence", autoApprove: true, navigateTo: "/guests" },
+        { id: "t3", title: "Analyze Priorities", description: "Calculating urgency scores based on arrival windows", status: "pending", stepType: "think", autoApprove: true },
+        { id: "t4", title: "Compute Optimal Routes", description: "Running floor-zone optimization to minimize elevator trips", status: "pending", stepType: "think", autoApprove: true, navigateTo: "/housekeeping" },
+        { id: "t5", title: "Update Queue Order", description: "Reordering cleaning queue with optimized assignments", status: "pending", stepType: "write", target: "Housekeeping System", autoApprove: true, navigateTo: "/housekeeping" },
+        { id: "t6", title: "Notify Staff", description: "Pushing updated assignments to staff devices", status: "pending", stepType: "notify", autoApprove: true },
+      ],
+      status: "pending_approval",
+      summary: "Housekeeping queue optimized with 23% reduction in floor changes",
+    };
+  }
+
+  if ((lowerQuery.includes("prepare") || lowerQuery.includes("setup")) && (lowerQuery.includes("vip") || lowerQuery.includes("arrival") || lowerQuery.includes("guest"))) {
+    const guestMatch = query.match(/(?:for|guest)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+    const guestName = guestMatch ? guestMatch[1] : "VIP guest";
+    return {
+      id: `plan_${Date.now()}`,
+      query,
+      reasoning: `Coordinating a personalized arrival experience for ${guestName}. I'll pull their full profile, verify room readiness, and brief all relevant departments.`,
+      tasks: [
+        { id: "t1", title: "Read Guest Profile", description: `Loading complete intelligence for ${guestName}`, status: "pending", stepType: "read", target: "Guest Database", autoApprove: true, navigateTo: "/guests" },
+        { id: "t2", title: "Analyze Preferences", description: "Cross-referencing past stays with current room setup", status: "pending", stepType: "think", autoApprove: true },
+        { id: "t3", title: "Check Room Status", description: "Verifying room readiness and special setup completion", status: "pending", stepType: "read", target: "Housekeeping", autoApprove: true, navigateTo: "/housekeeping" },
+        { id: "t4", title: "Prepare Amenities", description: "Triggering personalized amenity setup workflow", status: "pending", stepType: "action", autoApprove: true },
+        { id: "t5", title: "Brief Front Desk", description: "Sending guest preferences and check-in notes", status: "pending", stepType: "notify", target: "Front Desk", autoApprove: true, navigateTo: "/" },
+        { id: "t6", title: "Alert F&B Team", description: "Notifying of dietary restrictions and dining preferences", status: "pending", stepType: "notify", target: "F&B", autoApprove: true },
+      ],
+      status: "pending_approval",
+      summary: `${guestName}'s arrival preparation complete - all departments briefed`,
+    };
+  }
+
+  if (lowerQuery.includes("assign") && lowerQuery.includes("room")) {
+    const guestMatch = query.match(/(?:for|guest)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+    const guestName = guestMatch ? guestMatch[1] : "the guest";
+    return {
+      id: `plan_${Date.now()}`,
+      query,
+      reasoning: `Finding the optimal room for ${guestName} based on their historical preferences and current availability.`,
+      tasks: [
+        { id: "t1", title: "Read Guest Preferences", description: "Loading room preference history", status: "pending", stepType: "read", target: "Guest Intelligence", autoApprove: true, navigateTo: "/guests" },
+        { id: "t2", title: "Read Room Inventory", description: "Querying available rooms matching requirements", status: "pending", stepType: "read", target: "OPERA PMS", autoApprove: true, navigateTo: "/housekeeping" },
+        { id: "t3", title: "Score Room Options", description: "Ranking available rooms by preference match percentage", status: "pending", stepType: "think", autoApprove: true },
+        { id: "t4", title: "Assign Room", description: "Updating reservation with best matching room", status: "pending", stepType: "write", target: "OPERA PMS", autoApprove: true, navigateTo: "/guests" },
+        { id: "t5", title: "Prioritize Cleaning", description: "Alerting housekeeping of room priority", status: "pending", stepType: "notify", target: "Housekeeping", autoApprove: true, navigateTo: "/housekeeping" },
+      ],
+      status: "pending_approval",
+      summary: `Room assigned with 94% preference match for ${guestName}`,
+    };
+  }
+
+  if (lowerQuery.includes("send") && (lowerQuery.includes("email") || lowerQuery.includes("message") || lowerQuery.includes("notify"))) {
+    return {
+      id: `plan_${Date.now()}`,
+      query,
+      reasoning: "Composing a personalized pre-arrival message using the guest's profile and communication preferences.",
+      tasks: [
+        { id: "t1", title: "Read Guest Profile", description: "Loading communication history and preferences", status: "pending", stepType: "read", target: "Guest Database", autoApprove: true, navigateTo: "/guests" },
+        { id: "t2", title: "Analyze Context", description: "Determining optimal message content and timing", status: "pending", stepType: "think", autoApprove: true },
+        { id: "t3", title: "Generate Message", description: "Creating personalized content from template", status: "pending", stepType: "action", autoApprove: true },
+        { id: "t4", title: "Send Communication", description: "Delivering via guest's preferred channel", status: "pending", stepType: "notify", autoApprove: true },
+        { id: "t5", title: "Log Interaction", description: "Recording in guest communication history", status: "pending", stepType: "write", target: "Guest Database", autoApprove: true, navigateTo: "/guests" },
+      ],
+      status: "pending_approval",
+      summary: "Pre-arrival message sent successfully",
+    };
+  }
+
+  return null;
+}
+
 export default function CopilotSidebar() {
   const {
     isOpen,
@@ -241,35 +353,30 @@ export default function CopilotSidebar() {
     pageContext,
   } = useCopilot();
 
+  const router = useRouter();
   const [isMinimized, setIsMinimized] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<GuestIntelligence | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [taskPlan, setTaskPlan] = useState<TaskPlan | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (activeTab === "chat") {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, activeTab]);
+  }, [messages, activeTab, taskPlan]);
 
-  // Generate contextual system message based on page context
   const getContextDescription = () => {
     const parts: string[] = [];
     if (pageContext.page) {
       parts.push(`Viewing: ${pageContext.page}`);
     }
     if (pageContext.selectedRoom) {
-      parts.push(
-        `Room ${pageContext.selectedRoom.roomNumber} (${pageContext.selectedRoom.category}, ${pageContext.selectedRoom.status})`
-      );
+      parts.push(`Room ${pageContext.selectedRoom.roomNumber}`);
     }
     if (pageContext.selectedGuest) {
       parts.push(`Guest: ${pageContext.selectedGuest.name}`);
-      if (pageContext.selectedGuest.occasion) {
-        parts.push(`Occasion: ${pageContext.selectedGuest.occasion}`);
-      }
     }
     return parts.length > 0 ? parts.join(" | ") : null;
   };
@@ -282,82 +389,119 @@ export default function CopilotSidebar() {
     addMessage("user", userMessage);
     setIsSending(true);
 
-    // Simulate AI response (in production, this would call an API)
-    setTimeout(() => {
-      const contextDesc = getContextDescription();
-      let response = "";
+    await new Promise((r) => setTimeout(r, 800));
 
-      // Simple contextual responses for demo
-      if (userMessage.toLowerCase().includes("room 412") || pageContext.selectedRoom?.roomNumber === "412") {
-        response =
-          "Room 412 is a Park Suite on floor 4. The next guest is Mr. Marcus Chen (VIP), arriving today for his wife's 40th birthday. Key preparations needed: quiet room assignment, birthday amenity with peonies, and vegetarian dining preferences noted.";
-      } else if (userMessage.toLowerCase().includes("vip") || userMessage.toLowerCase().includes("arrival")) {
-        response =
-          "Today we have 3 arrivals including 2 VIPs:\n\n1. **Piper Kiser (VVIP)** - Royal Suite 501, Anniversary\n2. **Marcus Chen (VIP)** - Park Suite 412, Wife's birthday\n3. **Courtney Adams** - Deluxe Room, First visit (shellfish allergy)\n\nWould you like details on any specific guest?";
-      } else if (userMessage.toLowerCase().includes("housekeeping") || userMessage.toLowerCase().includes("clean")) {
-        response =
-          "Current housekeeping priorities:\n\n1. **Room 501** (URGENT) - VIP departure/arrival, anniversary setup\n2. **Room 412** (HIGH) - VIP birthday setup with peonies\n3. **Room 305** (MEDIUM) - Family stayover\n4. **Room 410** (LOW) - Business stayover, light refresh";
+    // Try to generate a task plan
+    const plan = generateTaskPlan(userMessage);
+    if (plan) {
+      setTaskPlan(plan);
+      addMessage("assistant", `I've created an execution plan with ${plan.tasks.length} tasks. Review and approve below to execute.`);
+    } else {
+      // Fallback text response
+      const lowerQuery = userMessage.toLowerCase();
+      let response = "";
+      if (lowerQuery.includes("vip") || lowerQuery.includes("arrival")) {
+        response = "Today we have 3 arrivals including 2 VIPs. Try: **\"Prepare VIP arrival for Piper Kiser\"** to execute automated preparation.";
+      } else if (lowerQuery.includes("housekeeping") || lowerQuery.includes("clean")) {
+        response = "There are 4 rooms in the queue. Try: **\"Optimize housekeeping queue\"** to run automated route optimization.";
       } else {
-        response = `I'm here to help with Four Seasons operations. ${
-          contextDesc ? `Currently ${contextDesc}.` : ""
-        } You can ask me about:\n\n- Today's arrivals and VIP guests\n- Guest preferences and special occasions\n- Housekeeping priorities and room status\n- Action items and preparations`;
+        response = "I can execute tasks for you. Try:\n\n• \"Optimize housekeeping queue\"\n• \"Prepare VIP arrival for [name]\"\n• \"Assign room for [guest]\"\n• \"Send pre-arrival email\"";
+      }
+      addMessage("assistant", response);
+    }
+    setIsSending(false);
+  };
+
+  const handleApproveTaskPlan = () => {
+    if (!taskPlan) return;
+    setTaskPlan({ ...taskPlan, status: "executing" });
+
+    let idx = 0;
+    const runNext = () => {
+      if (idx >= taskPlan.tasks.length) {
+        setTaskPlan((p) => p ? { ...p, status: "completed" } : null);
+        addMessage("assistant", "All tasks completed successfully!");
+        return;
       }
 
-      addMessage("assistant", response);
-      setIsSending(false);
-    }, 1000);
+      const currentTask = taskPlan.tasks[idx];
+
+      // Navigate to the relevant page when task starts
+      if (currentTask.navigateTo) {
+        router.push(currentTask.navigateTo);
+      }
+
+      setTaskPlan((p) => {
+        if (!p) return null;
+        const tasks = [...p.tasks];
+        tasks[idx] = { ...tasks[idx], status: "running" };
+        return { ...p, tasks };
+      });
+
+      // Simulate task execution with varying durations
+      const duration = currentTask.stepType === "think" ? 1200 + Math.random() * 800 : 600 + Math.random() * 600;
+
+      setTimeout(() => {
+        setTaskPlan((p) => {
+          if (!p) return null;
+          const tasks = [...p.tasks];
+          tasks[idx] = { ...tasks[idx], status: "completed", result: getTaskResult(currentTask) };
+          return { ...p, tasks };
+        });
+        idx++;
+        runNext();
+      }, duration);
+    };
+    runNext();
+  };
+
+  // Generate realistic task results
+  const getTaskResult = (task: AgentTask): string => {
+    switch (task.stepType) {
+      case "read":
+        if (task.target?.includes("PMS") || task.target?.includes("Housekeeping")) return "Retrieved 47 room records";
+        if (task.target?.includes("Guest") || task.target?.includes("Intelligence")) return "Loaded guest profile with 23 preferences";
+        return "Data loaded successfully";
+      case "write":
+        return "Updated successfully";
+      case "think":
+        if (task.title.includes("Priorities")) return "Scored 12 high-priority rooms";
+        if (task.title.includes("Routes") || task.title.includes("Optimal")) return "Optimized route saves 23% travel time";
+        if (task.title.includes("Score")) return "Best match: Room 801 (94% match)";
+        return "Analysis complete";
+      case "action":
+        return "Action completed";
+      case "notify":
+        return "Notification sent";
+      default:
+        return "Completed";
+    }
+  };
+
+  const handleCancelTaskPlan = () => {
+    setTaskPlan(null);
   };
 
   if (!isOpen) return null;
 
-  // Minimized state - just icon bar
   if (isMinimized) {
     return (
       <div className="fixed right-0 top-[96px] bottom-0 w-12 bg-[#1a1a1a] flex flex-col items-center py-4 z-40 shadow-lg">
-        <button
-          onClick={() => setIsMinimized(false)}
-          className="p-2 hover:bg-gray-700 rounded transition-colors mb-4"
-        >
+        <button onClick={() => setIsMinimized(false)} className="p-2 hover:bg-gray-700 rounded transition-colors mb-4">
           <ChevronLeft size={20} className="text-white" />
         </button>
         <div className="flex-1 flex flex-col items-center gap-3">
-          <button
-            onClick={() => {
-              setIsMinimized(false);
-              setActiveTab("chat");
-            }}
-            className={`p-2 rounded transition-colors ${
-              activeTab === "chat" ? "bg-white/20" : "hover:bg-gray-700"
-            }`}
-          >
+          <button onClick={() => { setIsMinimized(false); setActiveTab("chat"); }} className={`p-2 rounded transition-colors ${activeTab === "chat" ? "bg-white/20" : "hover:bg-gray-700"}`}>
             <MessageSquare size={18} className="text-white" />
           </button>
-          <button
-            onClick={() => {
-              setIsMinimized(false);
-              setActiveTab("arrivals");
-            }}
-            className={`p-2 rounded transition-colors ${
-              activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-700"
-            }`}
-          >
+          <button onClick={() => { setIsMinimized(false); setActiveTab("arrivals"); }} className={`p-2 rounded transition-colors ${activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-700"}`}>
             <Users size={18} className="text-white" />
           </button>
-          <button
-            onClick={() => {
-              setIsMinimized(false);
-              setActiveTab("housekeeping");
-            }}
-            className={`p-2 rounded transition-colors ${
-              activeTab === "housekeeping" ? "bg-white/20" : "hover:bg-gray-700"
-            }`}
-          >
+          <button onClick={() => { setIsMinimized(false); setActiveTab("housekeeping"); }} className={`p-2 rounded transition-colors ${activeTab === "housekeeping" ? "bg-white/20" : "hover:bg-gray-700"}`}>
             <Building2 size={18} className="text-white" />
           </button>
         </div>
-        <div className="mt-auto">
-          <Sparkles size={20} className="text-white/70" />
-        </div>
+        <Sparkles size={20} className="text-white/70 mt-auto" />
       </div>
     );
   }
@@ -370,16 +514,11 @@ export default function CopilotSidebar() {
           <Sparkles size={18} className="text-white" />
           <span className="text-[14px] font-semibold text-white">Copilot</span>
           {getContextDescription() && (
-            <span className="text-[11px] text-gray-400 ml-2 truncate max-w-[180px]">
-              {getContextDescription()}
-            </span>
+            <span className="text-[11px] text-gray-400 ml-2 truncate max-w-[150px]">{getContextDescription()}</span>
           )}
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setIsMinimized(true)}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors"
-          >
+          <button onClick={() => setIsMinimized(true)} className="p-1.5 hover:bg-gray-700 rounded transition-colors">
             <ChevronRight size={16} className="text-white" />
           </button>
           <button onClick={close} className="p-1.5 hover:bg-gray-700 rounded transition-colors">
@@ -390,43 +529,24 @@ export default function CopilotSidebar() {
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-gray-50">
-        <button
-          onClick={() => setActiveTab("chat")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${
-            activeTab === "chat"
-              ? "text-black border-b-2 border-black bg-white"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
+        <button onClick={() => setActiveTab("chat")} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${activeTab === "chat" ? "text-black border-b-2 border-black bg-white" : "text-gray-500 hover:text-gray-700"}`}>
           <MessageSquare size={14} />
           Chat
         </button>
-        <button
-          onClick={() => {
-            setActiveTab("arrivals");
-            setSelectedGuest(null);
-          }}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${
-            activeTab === "arrivals"
-              ? "text-black border-b-2 border-black bg-white"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
+        <button onClick={() => { setActiveTab("arrivals"); setSelectedGuest(null); }} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${activeTab === "arrivals" ? "text-black border-b-2 border-black bg-white" : "text-gray-500 hover:text-gray-700"}`}>
           <Users size={14} />
           Arrivals
         </button>
-        <button
-          onClick={() => setActiveTab("housekeeping")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${
-            activeTab === "housekeeping"
-              ? "text-black border-b-2 border-black bg-white"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
+        <button onClick={() => setActiveTab("housekeeping")} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${activeTab === "housekeeping" ? "text-black border-b-2 border-black bg-white" : "text-gray-500 hover:text-gray-700"}`}>
           <Building2 size={14} />
           HK Queue
         </button>
       </div>
+
+      {/* Agent Status Bar - Shows when executing */}
+      {taskPlan?.status === "executing" && (
+        <AgentStatusBar taskPlan={taskPlan} />
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
@@ -443,8 +563,12 @@ export default function CopilotSidebar() {
             setChatInput={setChatInput}
             onSend={handleSendMessage}
             isSending={isSending}
-            onClear={clearMessages}
+            onClear={() => { clearMessages(); setTaskPlan(null); }}
             messagesEndRef={messagesEndRef}
+            taskPlan={taskPlan}
+            onApprove={handleApproveTaskPlan}
+            onCancel={handleCancelTaskPlan}
+            onNavigate={(path) => router.push(path)}
           />
         )}
         {activeTab === "housekeeping" && <HousekeepingView queue={mockHousekeepingQueue} />}
@@ -461,301 +585,86 @@ export default function CopilotSidebar() {
   );
 }
 
-// Arrivals View
-function ArrivalsView({
-  arrivals,
-  onSelectGuest,
-}: {
-  arrivals: GuestIntelligence[];
-  onSelectGuest: (guest: GuestIntelligence) => void;
-}) {
-  return (
-    <div className="p-4">
-      <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
-          Today's Arrivals
-        </div>
-        <div className="text-[13px] text-gray-600">
-          {arrivals.length} guests • {arrivals.filter((a) => a.vipCode).length} VIPs •{" "}
-          {arrivals.filter((a) => a.occasion).length} special occasions
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {arrivals.map((guest) => (
-          <button
-            key={guest.id}
-            onClick={() => onSelectGuest(guest)}
-            className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-semibold text-gray-900">{guest.name}</span>
-                  {guest.vipCode && (
-                    <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">
-                      {guest.vipCode}
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] text-gray-500">
-                  {guest.stayCount > 1 ? `${guest.stayCount} stays` : "First visit"} •{" "}
-                  {guest.roomType}
-                  {guest.assignedRoom && ` • Room ${guest.assignedRoom}`}
-                </div>
-              </div>
-              <ChevronRight size={16} className="text-gray-400 mt-1" />
-            </div>
-
-            {guest.occasion && (
-              <div className="flex items-center gap-1.5 text-[11px] text-rose-600 mb-1">
-                <Heart size={12} />
-                {guest.occasion}
-              </div>
-            )}
-
-            {guest.dietary.length > 0 && (
-              <div className="flex items-center gap-1.5 text-[11px] text-orange-600 mb-1">
-                <AlertTriangle size={12} />
-                {guest.dietary.join(", ")}
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
-              <span
-                className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                  guest.actionItems.filter((a) => a.priority === "high").length > 0
-                    ? "bg-red-100 text-red-700"
-                    : "bg-gray-100 text-gray-600"
-                }`}
-              >
-                {guest.actionItems.length} actions
-              </span>
-              {guest.communicationHistory.length > 0 && (
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">
-                  {guest.communicationHistory.length} messages
-                </span>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+// Get page display name
+function getPageName(path: string | null | undefined): string | null {
+  if (!path) return null;
+  switch (path) {
+    case "/": return "Dashboard";
+    case "/housekeeping": return "Housekeeping";
+    case "/guests": return "Guest Intelligence";
+    case "/schedule": return "Schedule";
+    case "/copilot": return "Copilot";
+    default: return path;
+  }
 }
 
-// Guest Detail View
-function GuestDetailView({
-  guest,
-  onBack,
-}: {
-  guest: GuestIntelligence;
-  onBack: () => void;
-}) {
-  return (
-    <div className="p-4">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-[12px] text-gray-600 hover:text-black mb-3"
-      >
-        <ChevronLeft size={14} />
-        Back to arrivals
-      </button>
+// Agent Status Bar - Shows current action when executing
+function AgentStatusBar({ taskPlan }: { taskPlan: TaskPlan }) {
+  const runningTask = taskPlan.tasks.find(t => t.status === "running");
+  const completedCount = taskPlan.tasks.filter(t => t.status === "completed").length;
+  const totalCount = taskPlan.tasks.length;
 
-      {/* Guest Header */}
-      <div className="mb-4 pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[18px] font-semibold text-gray-900">{guest.name}</span>
-          {guest.vipCode && (
-            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">
-              {guest.vipCode}
-            </span>
-          )}
+  if (!runningTask) return null;
+
+  const getActionVerb = (stepType: StepType | string | undefined) => {
+    switch (stepType) {
+      case "read": return "Reading";
+      case "write": return "Writing to";
+      case "think": return "Analyzing";
+      case "action": return "Executing";
+      case "notify": return "Notifying";
+      default: return "Processing";
+    }
+  };
+
+  const pageName = getPageName(runningTask.navigateTo);
+
+  return (
+    <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-4 py-2.5 flex items-center gap-3 border-b border-gray-700">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <Loader2 className="w-4 h-4 text-white animate-spin shrink-0" />
+        <div className="text-[11px] text-white font-medium truncate">
+          {getActionVerb(runningTask.stepType)} {runningTask.target || runningTask.title}
         </div>
-        <div className="text-[12px] text-gray-500">
-          {guest.stayCount > 1 ? `${guest.stayCount} stays` : "First visit"} •{" "}
-          {guest.arrivalDate} - {guest.departureDate} • {guest.roomType}
-          {guest.assignedRoom && ` • Room ${guest.assignedRoom}`}
-        </div>
-        {guest.occasion && (
-          <div className="flex items-center gap-1.5 mt-2 text-[12px] text-rose-600">
-            <Heart size={14} />
-            <span className="font-medium">{guest.occasion}</span>
+        {pageName && (
+          <div className="flex items-center gap-1 text-[10px] text-gray-400 shrink-0">
+            <ArrowRight className="w-3 h-3" />
+            <span className="text-white">{pageName}</span>
           </div>
         )}
       </div>
-
-      {/* Action Items */}
-      <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-          Action Items
-        </div>
-        <div className="space-y-2">
-          {guest.actionItems.map((action, idx) => (
-            <div
-              key={idx}
-              className={`flex items-start gap-2 p-2 rounded ${
-                action.priority === "high"
-                  ? "bg-red-50 border border-red-200"
-                  : action.priority === "medium"
-                  ? "bg-yellow-50 border border-yellow-200"
-                  : "bg-gray-50 border border-gray-200"
-              }`}
-            >
-              <CheckCircle
-                size={14}
-                className={
-                  action.priority === "high"
-                    ? "text-red-500 mt-0.5"
-                    : action.priority === "medium"
-                    ? "text-yellow-500 mt-0.5"
-                    : "text-gray-400 mt-0.5"
-                }
-              />
-              <div className="flex-1">
-                <div className="text-[12px] text-gray-800">{action.action}</div>
-                {action.assignedTo && (
-                  <div className="text-[10px] text-gray-500">→ {action.assignedTo}</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="text-[10px] text-gray-400 shrink-0">
+        Step {completedCount + 1}/{totalCount}
       </div>
-
-      {/* Predicted Needs */}
-      <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-          Predicted Needs
-        </div>
-        <div className="space-y-1">
-          {guest.predictedNeeds.map((need, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-[12px] text-gray-700">
-              <TrendingUp size={12} className="text-gray-500" />
-              {need}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Preferences */}
-      <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-          Preferences
-        </div>
-        <div className="space-y-2">
-          {guest.preferences.room.length > 0 && (
-            <div className="flex items-start gap-2">
-              <Bed size={14} className="text-gray-400 mt-0.5" />
-              <div className="flex flex-wrap gap-1">
-                {guest.preferences.room.map((pref, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded"
-                  >
-                    {pref}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {guest.preferences.dining.length > 0 && (
-            <div className="flex items-start gap-2">
-              <Utensils size={14} className="text-gray-400 mt-0.5" />
-              <div className="flex flex-wrap gap-1">
-                {guest.preferences.dining.map((pref, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] rounded"
-                  >
-                    {pref}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {guest.dietary.length > 0 && (
-            <div className="flex items-start gap-2">
-              <AlertTriangle size={14} className="text-orange-500 mt-0.5" />
-              <div className="flex flex-wrap gap-1">
-                {guest.dietary.map((item, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 bg-orange-50 text-orange-700 text-[10px] rounded font-medium"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Risk Signals */}
-      {guest.riskSignals.length > 0 && (
-        <div className="mb-4">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-            Signals
-          </div>
-          <div className="space-y-1">
-            {guest.riskSignals.map((signal, idx) => (
-              <div
-                key={idx}
-                className={`flex items-center gap-2 text-[12px] ${
-                  signal.type === "warning" ? "text-amber-700" : "text-green-700"
-                }`}
-              >
-                {signal.type === "warning" ? <AlertCircle size={12} /> : <CheckCircle size={12} />}
-                {signal.message}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Communication History */}
-      {guest.communicationHistory.length > 0 && (
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-            Recent Communication
-          </div>
-          <div className="space-y-2">
-            {guest.communicationHistory.map((comm, idx) => (
-              <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
-                <div className="flex items-center gap-2 mb-1">
-                  {comm.type === "email" ? (
-                    <Mail size={12} className="text-gray-400" />
-                  ) : comm.type === "call" ? (
-                    <Phone size={12} className="text-gray-400" />
-                  ) : (
-                    <MessageSquare size={12} className="text-gray-400" />
-                  )}
-                  <span className="text-[11px] text-gray-500">{comm.date}</span>
-                </div>
-                <div className="text-[12px] text-gray-700">{comm.summary}</div>
-                {comm.requests.length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {comm.requests.map((req, i) => (
-                      <span
-                        key={i}
-                        className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] rounded"
-                      >
-                        {req}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-// Chat View
+// Step type badge component
+function StepTypeBadge({ type, status }: { type: StepType | string | undefined | null; status: string }) {
+  const config: Record<string, { label: string; bg: string; text: string }> = {
+    read: { label: "READ", bg: "bg-gray-100", text: "text-gray-700" },
+    write: { label: "WRITE", bg: "bg-gray-100", text: "text-gray-700" },
+    think: { label: "THINK", bg: "bg-gray-100", text: "text-gray-700" },
+    action: { label: "ACTION", bg: "bg-gray-100", text: "text-gray-700" },
+    notify: { label: "NOTIFY", bg: "bg-gray-100", text: "text-gray-700" },
+    // Fallbacks for old type system
+    api_call: { label: "API", bg: "bg-gray-100", text: "text-gray-700" },
+    query: { label: "READ", bg: "bg-gray-100", text: "text-gray-700" },
+    update: { label: "WRITE", bg: "bg-gray-100", text: "text-gray-700" },
+    notification: { label: "NOTIFY", bg: "bg-gray-100", text: "text-gray-700" },
+  };
+  const defaultConfig = { label: "TASK", bg: "bg-gray-100", text: "text-gray-700" };
+  const stepConfig = (type && typeof type === "string" && config[type]) ? config[type] : defaultConfig;
+  const isActive = status === "running";
+  return (
+    <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${isActive ? "bg-gray-900 text-white" : stepConfig.bg + " " + stepConfig.text}`}>
+      {stepConfig.label}
+    </span>
+  );
+}
+
+// Chat View with Task Execution
 function ChatView({
   messages,
   chatInput,
@@ -764,6 +673,10 @@ function ChatView({
   isSending,
   onClear,
   messagesEndRef,
+  taskPlan,
+  onApprove,
+  onCancel,
+  onNavigate,
 }: {
   messages: { id: string; role: string; content: string; timestamp: Date }[];
   chatInput: string;
@@ -772,45 +685,44 @@ function ChatView({
   isSending: boolean;
   onClear: () => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  taskPlan: TaskPlan | null;
+  onApprove: () => void;
+  onCancel: () => void;
+  onNavigate: (path: string) => void;
 }) {
+  const completedCount = taskPlan?.tasks.filter(t => t.status === "completed").length || 0;
+  const totalCount = taskPlan?.tasks.length || 0;
+
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="text-center py-8">
             <Sparkles size={32} className="mx-auto mb-3 text-gray-300" />
-            <div className="text-[14px] text-gray-500 mb-2">Welcome to Copilot</div>
-            <div className="text-[12px] text-gray-400">
-              Ask about arrivals, guest preferences,
-              <br />
-              housekeeping priorities, or any operational question.
+            <div className="text-[14px] text-gray-500 mb-2">AI Task Assistant</div>
+            <div className="text-[12px] text-gray-400 mb-4">
+              I can execute tasks across hotel systems.
+            </div>
+            <div className="space-y-2 text-left max-w-[280px] mx-auto">
+              {["Optimize housekeeping queue", "Prepare VIP arrival for Piper Kiser", "Assign room for Marcus Chen"].map((prompt, i) => (
+                <button
+                  key={i}
+                  onClick={() => setChatInput(prompt)}
+                  className="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-[12px] text-gray-700 transition-colors"
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           </div>
         ) : (
           <>
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${
-                    msg.role === "user"
-                      ? "bg-[#1a1a1a] text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
+              <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === "user" ? "bg-[#1a1a1a] text-white" : "bg-gray-100 text-gray-800"}`}>
                   <div className="whitespace-pre-wrap">{msg.content}</div>
-                  <div
-                    className={`text-[10px] mt-1 ${
-                      msg.role === "user" ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    {msg.timestamp.toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                  <div className={`text-[10px] mt-1 ${msg.role === "user" ? "text-gray-400" : "text-gray-500"}`}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                   </div>
                 </div>
               </div>
@@ -822,21 +734,172 @@ function ChatView({
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </>
         )}
+
+        {/* Enhanced Task Plan UI */}
+        {taskPlan && (
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mt-2 shadow-sm">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-3 py-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <span className="text-[12px] font-semibold text-white">Execution Plan</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {taskPlan.status === "completed" ? (
+                    <span className="flex items-center gap-1 text-[10px] text-green-400">
+                      <CheckCircle2 className="w-3 h-3" /> Complete
+                    </span>
+                  ) : taskPlan.status === "executing" ? (
+                    <span className="text-[10px] text-amber-400">{completedCount}/{totalCount} steps</span>
+                  ) : (
+                    <span className="text-[10px] text-gray-400">{totalCount} steps</span>
+                  )}
+                </div>
+              </div>
+              {/* Progress bar */}
+              {(taskPlan.status === "executing" || taskPlan.status === "completed") && (
+                <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${taskPlan.status === "completed" ? "bg-green-500" : "bg-gray-500"}`}
+                    style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Reasoning */}
+            <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-3 h-3 text-gray-700 mt-0.5 shrink-0" />
+                <p className="text-[11px] text-gray-700 leading-relaxed">{taskPlan.reasoning}</p>
+              </div>
+            </div>
+
+            {/* Tasks */}
+            <div className="p-2 space-y-1">
+              {taskPlan.tasks.map((task, idx) => (
+                <div
+                  key={task.id}
+                  className={`p-2 rounded-lg border transition-all ${
+                    task.status === "completed"
+                      ? "bg-green-50 border-green-200"
+                      : task.status === "running"
+                      ? "bg-amber-50 border-amber-300 shadow-sm"
+                      : "bg-gray-50 border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    {/* Status Icon */}
+                    <div className="mt-0.5 shrink-0">
+                    {task.status === "completed" ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    ) : task.status === "running" ? (
+                      <Loader2 className="w-4 h-4 text-gray-600 animate-spin" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-gray-300" />
+                    )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <StepTypeBadge type={task.stepType || (task as unknown as { type?: string }).type} status={task.status} />
+                        <span className="text-[11px] font-medium text-gray-800">{task.title}</span>
+                        {!task.autoApprove && task.status === "pending" && (
+                          <span className="px-1 py-0.5 text-[8px] bg-gray-100 text-gray-600 rounded font-medium">
+                            REVIEW
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-0.5">{task.description}</p>
+
+                      {/* Target system */}
+                      {task.target && (
+                        <div className="text-[9px] text-gray-400 mt-1">
+                          <ArrowRight className="w-2.5 h-2.5 inline mr-0.5" />
+                          {task.target}
+                        </div>
+                      )}
+
+                      {/* Navigation indicator when running */}
+                      {task.status === "running" && task.navigateTo && (
+                        <div className="mt-1.5 flex items-center gap-1 text-[9px] text-gray-600 font-medium animate-pulse">
+                          <ArrowRight className="w-3 h-3" />
+                          Navigating to {getPageName(task.navigateTo)}...
+                        </div>
+                      )}
+
+                      {/* Navigation link when completed */}
+                      {task.status === "completed" && task.navigateTo && (
+                        <button
+                          onClick={() => {
+                            if (task.navigateTo) onNavigate(task.navigateTo);
+                          }}
+                          className="mt-1.5 text-[10px] text-gray-700 hover:text-gray-900 flex items-center gap-1"
+                        >
+                          <ArrowRight className="w-3 h-3" />
+                          View {getPageName(task.navigateTo)}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Summary (on completion) */}
+            {taskPlan.status === "completed" && taskPlan.summary && (
+              <div className="px-3 py-2 bg-green-50 border-t border-green-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-[11px] text-green-800 font-medium">{taskPlan.summary}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            {taskPlan.status === "pending_approval" && (
+              <div className="p-2 border-t border-gray-200 bg-gray-50">
+                <div className="flex gap-2">
+                  <button
+                    onClick={onCancel}
+                    className="flex-1 px-3 py-2 border border-gray-300 text-gray-600 rounded-md text-[11px] font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={onApprove}
+                    className="flex-1 px-3 py-2 bg-[#1a1a1a] text-white rounded-md text-[11px] font-medium hover:bg-[#2a2a2a] transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Play className="w-3 h-3" /> Execute {totalCount} Steps
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {taskPlan.status === "executing" && (
+              <div className="p-2 border-t border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-center gap-2 text-[11px] text-gray-700">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Executing step {completedCount + 1} of {totalCount}...</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <div className="border-t border-gray-200 p-3">
         {messages.length > 0 && (
           <div className="flex justify-end mb-2">
-            <button
-              onClick={onClear}
-              className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600"
-            >
-              <Trash2 size={12} />
-              Clear chat
+            <button onClick={onClear} className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600">
+              <Trash2 size={12} /> Clear
             </button>
           </div>
         )}
@@ -846,17 +909,76 @@ function ChatView({
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && onSend()}
-            placeholder="Ask about guests, rooms, or operations..."
+            placeholder="Ask me to do something..."
             className="flex-1 rounded border border-gray-200 px-3 py-2 text-[13px] focus:border-gray-400 focus:outline-none"
             disabled={isSending}
           />
-          <button
-            onClick={onSend}
-            disabled={!chatInput.trim() || isSending}
-            className="rounded bg-[#1a1a1a] px-4 py-2 text-white hover:bg-[#2a2a2a] disabled:bg-gray-300 transition-colors"
-          >
+          <button onClick={onSend} disabled={!chatInput.trim() || isSending} className="rounded bg-[#1a1a1a] px-4 py-2 text-white hover:bg-[#2a2a2a] disabled:bg-gray-300 transition-colors">
             <Send size={16} />
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Arrivals View
+function ArrivalsView({ arrivals, onSelectGuest }: { arrivals: GuestIntelligence[]; onSelectGuest: (g: GuestIntelligence) => void }) {
+  return (
+    <div className="p-4">
+      <div className="mb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Today's Arrivals</div>
+        <div className="text-[13px] text-gray-600">{arrivals.length} guests • {arrivals.filter(a => a.vipCode).length} VIPs</div>
+      </div>
+      <div className="space-y-3">
+        {arrivals.map((guest) => (
+          <button key={guest.id} onClick={() => onSelectGuest(guest)} className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[14px] font-semibold text-gray-900">{guest.name}</span>
+                  {guest.vipCode && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">{guest.vipCode}</span>}
+                </div>
+                <div className="text-[11px] text-gray-500">{guest.stayCount > 1 ? `${guest.stayCount} stays` : "First visit"} • {guest.roomType}</div>
+              </div>
+              <ChevronRight size={16} className="text-gray-400 mt-1" />
+            </div>
+            {guest.occasion && <div className="flex items-center gap-1.5 text-[11px] text-rose-600 mb-1"><Heart size={12} />{guest.occasion}</div>}
+            {guest.dietary.length > 0 && <div className="flex items-center gap-1.5 text-[11px] text-orange-600"><AlertTriangle size={12} />{guest.dietary.join(", ")}</div>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Guest Detail View
+function GuestDetailView({ guest, onBack }: { guest: GuestIntelligence; onBack: () => void }) {
+  return (
+    <div className="p-4">
+      <button onClick={onBack} className="flex items-center gap-1 text-[12px] text-gray-600 hover:text-black mb-3">
+        <ChevronLeft size={14} /> Back
+      </button>
+      <div className="mb-4 pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[18px] font-semibold text-gray-900">{guest.name}</span>
+          {guest.vipCode && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">{guest.vipCode}</span>}
+        </div>
+        <div className="text-[12px] text-gray-500">{guest.roomType}{guest.assignedRoom && ` • Room ${guest.assignedRoom}`}</div>
+        {guest.occasion && <div className="flex items-center gap-1.5 mt-2 text-[12px] text-rose-600"><Heart size={14} />{guest.occasion}</div>}
+      </div>
+      <div className="mb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">Action Items</div>
+        <div className="space-y-2">
+          {guest.actionItems.map((action, idx) => (
+            <div key={idx} className={`flex items-start gap-2 p-2 rounded ${action.priority === "high" ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
+              <CheckCircle size={14} className={action.priority === "high" ? "text-red-500 mt-0.5" : "text-gray-400 mt-0.5"} />
+              <div className="flex-1">
+                <div className="text-[12px] text-gray-800">{action.action}</div>
+                {action.assignedTo && <div className="text-[10px] text-gray-500">→ {action.assignedTo}</div>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -868,67 +990,20 @@ function HousekeepingView({ queue }: { queue: typeof mockHousekeepingQueue }) {
   return (
     <div className="p-4">
       <div className="mb-4">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
-          Smart Cleaning Queue
-        </div>
-        <div className="text-[13px] text-gray-600">
-          Prioritized by arrival times & guest intelligence
-        </div>
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Smart Cleaning Queue</div>
+        <div className="text-[13px] text-gray-600">Prioritized by arrival times</div>
       </div>
-
       <div className="space-y-2">
         {queue.map((room, idx) => (
-          <div
-            key={idx}
-            className={`p-3 rounded-lg border ${
-              room.priority === "URGENT"
-                ? "bg-red-50 border-red-200"
-                : room.priority === "HIGH"
-                ? "bg-orange-50 border-orange-200"
-                : room.priority === "MEDIUM"
-                ? "bg-yellow-50 border-yellow-200"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
+          <div key={idx} className={`p-3 rounded-lg border ${room.priority === "URGENT" ? "bg-red-50 border-red-200" : room.priority === "HIGH" ? "bg-orange-50 border-orange-200" : "bg-gray-50 border-gray-200"}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-[16px] font-bold text-gray-900">Room {room.room}</span>
-                <span
-                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
-                    room.priority === "URGENT"
-                      ? "bg-red-500 text-white"
-                      : room.priority === "HIGH"
-                      ? "bg-orange-500 text-white"
-                      : room.priority === "MEDIUM"
-                      ? "bg-yellow-500 text-white"
-                      : "bg-gray-400 text-white"
-                  }`}
-                >
-                  {room.priority}
-                </span>
+                <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${room.priority === "URGENT" ? "bg-red-500 text-white" : room.priority === "HIGH" ? "bg-orange-500 text-white" : "bg-gray-400 text-white"}`}>{room.priority}</span>
               </div>
               <span className="text-[11px] text-gray-500">{room.estimatedTime} min</span>
             </div>
-
-            <div className="text-[11px] text-gray-600 mb-1">
-              {room.status === "departure" ? (
-                <span className="flex items-center gap-1">
-                  <Clock size={12} />
-                  Checkout {room.checkoutTime} → Next arrival {room.nextArrival}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <User size={12} />
-                  {room.guestType}
-                  {room.pattern && ` - ${room.pattern}`}
-                </span>
-              )}
-            </div>
-
-            {room.nextGuest && (
-              <div className="text-[11px] text-amber-700 font-medium">{room.nextGuest}</div>
-            )}
-
+            {room.nextGuest && <div className="text-[11px] text-amber-700 font-medium">{room.nextGuest}</div>}
             <div className="text-[11px] text-gray-700 mt-1">{room.notes}</div>
           </div>
         ))}

@@ -93,7 +93,7 @@ export default function AgentTaskPanel({
           <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-500 ${
-                isComplete ? "bg-green-500" : "bg-amber-500"
+                isComplete ? "bg-green-500" : "bg-gray-500"
               }`}
               style={{ width: `${(completedCount / plan.tasks.length) * 100}%` }}
             />
@@ -105,8 +105,8 @@ export default function AgentTaskPanel({
       </div>
 
       {/* Query Summary */}
-      <div className="px-4 py-3 border-b border-gray-100 bg-amber-50/50">
-        <div className="text-xs text-amber-700 font-medium mb-1">Request</div>
+      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+        <div className="text-xs text-gray-700 font-medium mb-1">Request</div>
         <div className="text-sm text-gray-800">{plan.query}</div>
       </div>
 
@@ -153,7 +153,7 @@ export default function AgentTaskPanel({
         )}
 
         {isExecuting && (
-          <div className="flex items-center justify-center gap-2 py-2 text-amber-600">
+          <div className="flex items-center justify-center gap-2 py-2 text-gray-700">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span className="text-sm font-medium">Executing tasks...</span>
           </div>
@@ -172,7 +172,8 @@ export default function AgentTaskPanel({
 
 function TaskItem({ task, index }: { task: AgentTask; index: number }) {
   const getIcon = () => {
-    switch (task.type) {
+    const taskType = task.type || "action";
+    switch (taskType) {
       case "api_call":
         return <Zap className="w-3.5 h-3.5" />;
       case "notification":
@@ -191,7 +192,7 @@ function TaskItem({ task, index }: { task: AgentTask; index: number }) {
       case "completed":
         return <CheckCircle2 className="w-5 h-5 text-green-500" />;
       case "running":
-        return <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />;
+        return <Loader2 className="w-5 h-5 text-gray-600 animate-spin" />;
       case "failed":
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
@@ -205,7 +206,7 @@ function TaskItem({ task, index }: { task: AgentTask; index: number }) {
         task.status === "completed"
           ? "bg-green-50 border-green-200"
           : task.status === "running"
-          ? "bg-amber-50 border-amber-200 shadow-sm"
+          ? "bg-gray-50 border-gray-200 shadow-sm"
           : task.status === "failed"
           ? "bg-red-50 border-red-200"
           : "bg-white border-gray-200"
@@ -219,9 +220,7 @@ function TaskItem({ task, index }: { task: AgentTask; index: number }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs text-gray-400 font-mono">#{index + 1}</span>
-            <div className={`p-1 rounded ${
-              task.status === "running" ? "bg-amber-100" : "bg-gray-100"
-            }`}>
+            <div className={`p-1 rounded ${task.status === "running" ? "bg-gray-200" : "bg-gray-100"}`}>
               {getIcon()}
             </div>
             <span className="text-sm font-medium text-gray-900 truncate">
