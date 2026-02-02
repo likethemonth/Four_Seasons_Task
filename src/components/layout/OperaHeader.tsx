@@ -121,6 +121,7 @@ const sidebarNavigation = [
       { label: "Dashboard", href: "/", icon: <LayoutDashboard size={18} /> },
       { label: "Guest Intelligence", href: "/guests", icon: <Users size={18} /> },
       { label: "Housekeeping", href: "/housekeeping", icon: <ClipboardList size={18} /> },
+      { label: "Copilot Demo", href: "/copilot", icon: <Sparkles size={18} /> },
     ],
   },
   {
