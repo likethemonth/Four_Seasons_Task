@@ -1,0 +1,32 @@
+<svg viewBox="0 0 50 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Four Seasons Tree Icon -->
+  <path d="M25 5 L25 75" stroke="currentColor" stroke-width="2"/>
+  <!-- Top branches -->
+  <path d="M25 12 L18 8 M25 12 L32 8" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M25 18 L15 12 M25 18 L35 12" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M25 24 L12 16 M25 24 L38 16" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Middle branches -->
+  <path d="M25 32 L10 22 M25 32 L40 22" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M25 40 L8 28 M25 40 L42 28" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M25 48 L6 34 M25 48 L44 34" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Lower branches -->
+  <path d="M25 56 L5 40 M25 56 L45 40" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M25 64 L4 46 M25 64 L46 46" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Dots/leaves at branch ends -->
+  <circle cx="18" cy="8" r="2" fill="currentColor"/>
+  <circle cx="32" cy="8" r="2" fill="currentColor"/>
+  <circle cx="15" cy="12" r="2" fill="currentColor"/>
+  <circle cx="35" cy="12" r="2" fill="currentColor"/>
+  <circle cx="12" cy="16" r="2" fill="currentColor"/>
+  <circle cx="38" cy="16" r="2" fill="currentColor"/>
+  <circle cx="10" cy="22" r="2" fill="currentColor"/>
+  <circle cx="40" cy="22" r="2" fill="currentColor"/>
+  <circle cx="8" cy="28" r="2" fill="currentColor"/>
+  <circle cx="42" cy="28" r="2" fill="currentColor"/>
+  <circle cx="6" cy="34" r="2" fill="currentColor"/>
+  <circle cx="44" cy="34" r="2" fill="currentColor"/>
+  <circle cx="5" cy="40" r="2" fill="currentColor"/>
+  <circle cx="45" cy="40" r="2" fill="currentColor"/>
+  <circle cx="4" cy="46" r="2" fill="currentColor"/>
+  <circle cx="46" cy="46" r="2" fill="currentColor"/>
+</svg>

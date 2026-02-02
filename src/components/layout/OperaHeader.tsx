@@ -194,130 +194,133 @@ export default function OperaHeader() {
 
   return (
     <>
-      {/* Top Header Bar - Dark */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between bg-[#1a1a1a] px-4">
-        <div className="flex items-center gap-4">
-          {/* Hamburger Menu */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-700 transition-colors"
-          >
-            {sidebarOpen ? (
-              <X size={20} className="text-white" />
-            ) : (
-              <Menu size={20} className="text-white" />
-            )}
-          </button>
-
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <Image
-              src="/images/four-seasons-logo.svg"
-              alt="Four Seasons"
-              width={56}
-              height={56}
-              className="brightness-0 invert"
-            />
-            <span className="font-display text-[18px] font-medium text-white tracking-[0.15em]">
-              FOUR SEASONS
-            </span>
-          </div>
-        </div>
-
-        {/* Center - Date */}
-        <div className="text-[13px] text-gray-300">
-          {currentDate}
-        </div>
-
-        {/* Right - User Info */}
-        <div className="flex items-center gap-4">
-          <div className="relative">
+      {/* Combined Header Bar */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a]">
+        {/* Top Row - Logo, Title, Date, User */}
+        <div className="flex h-14 items-center justify-between px-6 border-b border-gray-800">
+          <div className="flex items-center gap-5">
+            {/* Hamburger Menu */}
             <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 hover:bg-gray-700 rounded px-2 py-1 transition-colors"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-700 transition-colors"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-600">
-                <User size={14} className="text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-[11px] text-gray-400">PARK_LANE - Default HUB for Chain</div>
-                <div className="text-[12px] text-white">M. COCURON</div>
-              </div>
+              {sidebarOpen ? (
+                <X size={20} className="text-white" />
+              ) : (
+                <Menu size={20} className="text-white" />
+              )}
             </button>
 
-            {/* User Dropdown */}
-            {userMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg py-1 z-50">
-                <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                  <User size={14} /> Profile
-                </button>
-                <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                  <Settings size={14} /> Settings
-                </button>
-                <hr className="my-1" />
-                <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                  <LogOut size={14} /> Sign Out
-                </button>
-              </div>
-            )}
+            {/* Logo and Title */}
+            <div className="flex items-center gap-4">
+              <Image
+                src="/images/fs-tree.svg"
+                alt="Four Seasons"
+                width={36}
+                height={50}
+                className="text-white"
+                style={{ filter: 'invert(1)' }}
+              />
+              <span className="font-display text-[20px] font-normal text-white tracking-[0.2em]">
+                FOUR SEASONS
+              </span>
+            </div>
           </div>
-        </div>
-      </header>
 
-      {/* Navigation Bar - Black */}
-      <nav className="fixed top-16 left-0 right-0 z-40 flex h-10 items-center bg-[#2a2a2a] px-4" ref={dropdownRef}>
-        <div className="flex items-center gap-1">
+          {/* Center - Date */}
+          <div className="text-[13px] text-gray-400">
+            {currentDate}
+          </div>
 
-          {/* Navigation Dropdowns */}
-          {navDropdowns.map((dropdown) => (
-            <div key={dropdown.label} className="relative">
+          {/* Right - User Info */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
               <button
-                onClick={() =>
-                  setActiveDropdown(activeDropdown === dropdown.label ? null : dropdown.label)
-                }
-                className={`flex items-center gap-1 px-3 py-1.5 text-[13px] text-white hover:bg-[#3a3a3a] rounded transition-colors ${
-                  activeDropdown === dropdown.label ? "bg-[#3a3a3a]" : ""
-                }`}
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-3 hover:bg-gray-800 rounded px-3 py-1.5 transition-colors"
               >
-                {dropdown.label}
-                <ChevronDown size={14} />
+                <div className="text-right">
+                  <div className="text-[11px] text-gray-500">PARK_LANE - Default HUB for Chain</div>
+                  <div className="text-[13px] text-white">M. COCURON</div>
+                </div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700">
+                  <User size={16} className="text-gray-300" />
+                </div>
               </button>
 
-              {activeDropdown === dropdown.label && (
-                <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded shadow-lg py-1 z-50">
-                  {dropdown.items.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center gap-2 px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
-                      onClick={() => setActiveDropdown(null)}
-                    >
-                      {item.icon}
-                      {item.label}
-                    </Link>
-                  ))}
+              {/* User Dropdown */}
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg py-1 z-50">
+                  <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                    <User size={14} /> Profile
+                  </button>
+                  <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                    <Settings size={14} /> Settings
+                  </button>
+                  <hr className="my-1" />
+                  <button className="w-full px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                    <LogOut size={14} /> Sign Out
+                  </button>
                 </div>
               )}
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Right side icons */}
-        <div className="ml-auto flex items-center gap-2">
-          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
-            <Search size={18} className="text-white" />
-          </button>
-          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
-            <Bell size={18} className="text-white" />
-          </button>
-          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
-            <MessageSquare size={18} className="text-white" />
-          </button>
-        </div>
-      </nav>
+        {/* Bottom Row - Navigation */}
+        <nav className="flex h-10 items-center px-6" ref={dropdownRef}>
+          <div className="flex items-center gap-1">
+            {/* Navigation Dropdowns */}
+            {navDropdowns.map((dropdown) => (
+              <div key={dropdown.label} className="relative">
+                <button
+                  onClick={() =>
+                    setActiveDropdown(activeDropdown === dropdown.label ? null : dropdown.label)
+                  }
+                  className={`flex items-center gap-1 px-3 py-1.5 text-[13px] text-gray-300 hover:text-white hover:bg-gray-800 rounded transition-colors ${
+                    activeDropdown === dropdown.label ? "bg-gray-800 text-white" : ""
+                  }`}
+                >
+                  {dropdown.label}
+                  <ChevronDown size={14} />
+                </button>
+
+                {activeDropdown === dropdown.label && (
+                  <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded shadow-lg py-1 z-50">
+                    {dropdown.items.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className="flex items-center gap-2 px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-100"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        {item.icon}
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Right side icons */}
+          <div className="ml-auto flex items-center gap-1">
+            <button className="p-2 hover:bg-gray-800 rounded transition-colors">
+              <Search size={18} className="text-gray-400 hover:text-white" />
+            </button>
+            <button className="p-2 hover:bg-gray-800 rounded transition-colors">
+              <Bell size={18} className="text-gray-400 hover:text-white" />
+            </button>
+            <button className="p-2 hover:bg-gray-800 rounded transition-colors">
+              <MessageSquare size={18} className="text-gray-400 hover:text-white" />
+            </button>
+          </div>
+        </nav>
+      </header>
 
       {/* Breadcrumb Bar */}
-      <div className="fixed top-[104px] left-0 right-0 z-30 flex h-8 items-center justify-between bg-gray-100 border-b border-gray-200 px-4">
+      <div className="fixed top-[96px] left-0 right-0 z-30 flex h-8 items-center justify-between bg-gray-100 border-b border-gray-200 px-4">
         <div className="text-[12px] text-gray-600">
           {getBreadcrumb()}
         </div>
@@ -331,7 +334,7 @@ export default function OperaHeader() {
       </div>
 
       {/* Page Title Bar */}
-      <div className="fixed top-[136px] left-0 right-0 z-20 flex h-10 items-center justify-between bg-white border-b border-gray-200 px-4">
+      <div className="fixed top-[128px] left-0 right-0 z-20 flex h-10 items-center justify-between bg-white border-b border-gray-200 px-4">
         <h1 className="text-[16px] font-medium text-gray-900">
           {pathname === "/" && "Dashboard"}
           {pathname === "/guests" && "Guest Intelligence"}
@@ -365,7 +368,7 @@ export default function OperaHeader() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-[104px] bottom-0 w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
+        className={`fixed left-0 top-[96px] bottom-0 w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
