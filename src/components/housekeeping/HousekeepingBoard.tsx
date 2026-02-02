@@ -34,14 +34,14 @@ import {
 } from "@/lib/data/parkLaneRooms";
 import { useCopilot, type RoomContext } from "@/context/CopilotContext";
 
-// Status color mapping
+// Status color mapping (muted)
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  clean: { bg: "bg-green-100", text: "text-green-700", border: "border-green-300" },
-  inspected: { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-300" },
-  dirty: { bg: "bg-red-100", text: "text-red-700", border: "border-red-300" },
-  pickup: { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300" },
-  ooo: { bg: "bg-gray-300", text: "text-gray-600", border: "border-gray-400" },
-  oos: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-300" },
+  clean: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
+  inspected: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
+  dirty: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
+  pickup: { bg: "bg-yellow-50", text: "text-yellow-600", border: "border-yellow-200" },
+  ooo: { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-200" },
+  oos: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
 };
 
 const FO_STATUS_COLORS: Record<string, string> = {
@@ -503,7 +503,7 @@ function RoomTile({
 
   return (
     <div
-      className={`group relative rounded-sm border-2 ${colors.border} ${colors.bg} ${
+      className={`group relative rounded-sm border ${colors.border} ${colors.bg} ${
         compact ? "p-1.5" : "p-2"
       } cursor-pointer transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-blue-500" : ""
