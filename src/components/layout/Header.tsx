@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 
 const properties = [
@@ -16,11 +15,11 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 flex h-24 items-center justify-between bg-black px-8">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/four-seasons-logo.svg"
             alt="Four Seasons"
-            width={40}
-            height={60}
+            className="h-14 w-auto"
           />
         </div>
         <div className="ml-4 border-l border-gray-600 pl-6">

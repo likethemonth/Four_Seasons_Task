@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Button from "@/components/ui/Button";
 import {
   X,
   Clock,
@@ -198,6 +199,8 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
 
   const timeSaved = manualTotal.time - optimizedTotal.time;
   const floorChangesSaved = manualTotal.floorChanges - optimizedTotal.floorChanges;
+  const hourlyRate = 18; // £18/hour baseline for housekeeping
+  const costSaved = Math.round((timeSaved / 60) * hourlyRate);
 
   const runOptimization = () => {
     setIsOptimizing(true);
@@ -222,15 +225,15 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
   const activeAssignments = showOptimized ? optimizedAssignments : manualAssignments;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-sm shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-gray-200">
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-sm shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-gray-300">
         {/* Header */}
-        <div className="bg-[#1a1a1a] text-white px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-white">
           <div>
-            <h2 className="text-[16px] font-semibold">Housekeeping Queue Optimization</h2>
-            <p className="text-gray-400 text-[12px]">Floor-based staff allocation to minimize elevator travel</p>
+            <h2 className="text-[16px] font-semibold text-black">Housekeeping Queue Optimization</h2>
+            <p className="text-gray-600 text-[12px]">Floor-based staff allocation to minimize elevator travel</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -412,16 +415,14 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                             {task.isVip && (
                               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                             )}
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium uppercase ${
-                              task.type === "suite"
-                                ? "bg-amber-100 text-amber-700"
-                                : task.type === "deluxe"
-                                ? "bg-blue-100 text-blue-700"
-                                : task.type === "premier"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-gray-100 text-gray-600"
-                            }`}>
-                              {task.type}
+                            <span className="px-1.5 py-0.5 rounded-sm text-[9px] font-medium uppercase border border-gray-300 bg-white text-gray-700 tracking-wide">
+                              {task.type === 'suite'
+                                ? 'Suite'
+                                : task.type === 'deluxe'
+                                ? 'Deluxe'
+                                : task.type === 'premier'
+                                ? 'Premier'
+                                : 'Superior'}
                             </span>
                           </div>
                           <div className="text-[11px] text-gray-500 mt-0.5">
@@ -473,13 +474,9 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
               {/* Run Optimization */}
               <div className="bg-gray-50 rounded-sm p-4 border border-gray-200">
                 {!isOptimizing && !optimizationComplete && (
-                  <button
-                    onClick={runOptimization}
-                    className="w-full bg-[#1a1a1a] text-white py-3 px-4 rounded-sm text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all"
-                  >
-                    <Play className="w-4 h-4" />
-                    Run Optimization
-                  </button>
+                  <Button onClick={runOptimization} variant="primary" className="w-full py-3">
+                    <Play className="w-4 h-4" /> Run Optimization
+                  </Button>
                 )}
 
                 {isOptimizing && (
@@ -579,6 +576,10 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                           <div className="text-[9px] text-green-600 uppercase">Minutes</div>
                         </div>
                       </div>
+                      <div className="mt-3 flex items-center justify-center gap-2 rounded-sm border border-green-200 bg-white p-2">
+                        <span className="text-[11px] text-gray-600">Projected Cost Savings Today</span>
+                        <span className="text-[14px] font-semibold text-green-700">£{costSaved.toLocaleString()}</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -586,13 +587,9 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
 
               {/* Apply Button */}
               {optimizationComplete && (
-                <button
-                  onClick={onClose}
-                  className="w-full bg-[#2E7D32] text-white py-3 px-4 rounded-sm text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#256025] transition-all"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Apply Assignments
-                </button>
+                <Button onClick={onClose} variant="primary" className="w-full py-3">
+                  <CheckCircle2 className="w-4 h-4" /> Apply Assignments
+                </Button>
               )}
 
               {/* Key Insight */}
@@ -600,6 +597,47 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Key Insight</div>
                 <div className="text-[11px] text-gray-700">
                   Staff assigned to floor zones instead of random rooms. Suites and VIP arrivals prioritized automatically.
+                </div>
+              </div>
+
+              {/* Routing Visualization */}
+              <div className="mt-4 border border-gray-200 rounded-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 bg-white">
+                  <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Routing Visualization</h4>
+                  <p className="text-[11px] text-gray-500 mt-1">Each column is an attendant; dots mark floors serviced. Fewer gaps = fewer elevator trips.</p>
+                </div>
+                <div className="p-3 overflow-x-auto bg-white">
+                  <div className="grid" style={{ gridTemplateColumns: `80px repeat(${activeAssignments.length}, minmax(80px,1fr))` }}>
+                    <div></div>
+                    {activeAssignments.map((s) => (
+                      <div key={`head-${s.id}`} className="flex items-center gap-2 px-2 pb-2 border-b border-gray-100">
+                        <div className="w-7 h-7 rounded-full bg-[#1a1a1a] text-white text-[10px] font-medium flex items-center justify-center">
+                          {s.initials}
+                        </div>
+                        <div className="text-[11px] text-gray-700 truncate">{s.name}</div>
+                      </div>
+                    ))}
+                    {FLOORS.map((fl) => (
+                      <>
+                        <div key={`label-${fl.floor}`} className="py-2 pr-3 text-right text-[12px] text-gray-600 border-b border-gray-100">Floor {fl.floor}</div>
+                        {activeAssignments.map((s) => {
+                          const floorsWorked = Array.from(new Set(s.rooms.map((r) => r.floor)));
+                          const onThisFloor = floorsWorked.includes(fl.floor);
+                          return (
+                            <div key={`${s.id}-${fl.floor}`} className="py-2 flex items-center justify-center border-b border-gray-100" title={`${s.name} ${onThisFloor ? 'services' : 'no tasks on'} floor ${fl.floor}`}>
+                              <div className={`w-3 h-3 rounded-full ${onThisFloor ? 'bg-gray-900' : 'bg-gray-200'}`} />
+                            </div>
+                          );
+                        })}
+                      </>
+                    ))}
+                    <div></div>
+                    {activeAssignments.map((s) => (
+                      <div key={`sum-${s.id}`} className="pt-2 text-center text-[10px] text-gray-600">
+                        {s.floorChanges > 0 ? `Transitions: ${s.floorChanges}` : 'Single-zone'}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
