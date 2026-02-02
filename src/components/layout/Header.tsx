@@ -17,11 +17,10 @@ export default function Header() {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           <Image
-            src="/images/four-seasons-logo.svg"
+            src="/images/four-seasons-logo.png"
             alt="Four Seasons"
-            width={180}
+            width={50}
             height={50}
-            className="invert"
           />
         </div>
         <div className="ml-4 border-l border-gray-600 pl-6">
