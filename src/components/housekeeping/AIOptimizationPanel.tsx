@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   X,
-  Sparkles,
   TrendingDown,
   Clock,
   Route,
   Zap,
   DollarSign,
-  ArrowRight,
   CheckCircle2,
   Play,
   RotateCcw,
@@ -55,7 +53,6 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
   const generateRooms = useCallback((floor: number, count: number): Room[] => {
     const rooms: Room[] = [];
     const cols = Math.min(count, 6);
-    const rows = Math.ceil(count / cols);
 
     for (let i = 0; i < count; i++) {
       const col = i % cols;
@@ -89,15 +86,15 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
 
     // Simulate optimization steps
     const steps = [
-      { step: 1, label: "Analyzing room states...", duration: 800 },
-      { step: 2, label: "Calculating optimal routes...", duration: 1000 },
-      { step: 3, label: "Prioritizing VIP arrivals...", duration: 600 },
-      { step: 4, label: "Minimizing travel distance...", duration: 900 },
-      { step: 5, label: "Generating assignment plan...", duration: 700 },
+      { step: 1, duration: 800 },
+      { step: 2, duration: 1000 },
+      { step: 3, duration: 600 },
+      { step: 4, duration: 900 },
+      { step: 5, duration: 700 },
     ];
 
     let totalDelay = 0;
-    steps.forEach((s, idx) => {
+    steps.forEach((s) => {
       setTimeout(() => {
         setCurrentStep(s.step);
       }, totalDelay);
@@ -147,21 +144,16 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-sm shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-gray-200">
         {/* Header */}
-        <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">AI Route Optimization</h2>
-              <p className="text-violet-200 text-sm">Intelligent task queuing for maximum efficiency</p>
-            </div>
+        <div className="bg-[#1a1a1a] text-white px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-[16px] font-semibold">Route Optimization</h2>
+            <p className="text-gray-400 text-[12px]">Intelligent task queuing for maximum efficiency</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-700 rounded transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -180,10 +172,10 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                       setSelectedFloor(f.floor);
                       resetOptimization();
                     }}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    className={`px-3 py-1.5 text-[12px] font-medium rounded-sm transition-all border ${
                       selectedFloor === f.floor
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
                     }`}
                   >
                     Floor {f.floor}
@@ -192,8 +184,8 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
               </div>
 
               {/* Floor Plan SVG */}
-              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 relative overflow-hidden">
-                <div className="absolute top-2 left-2 text-xs text-gray-500 font-medium">
+              <div className="bg-gray-50 rounded-sm border border-gray-200 p-4 relative overflow-hidden">
+                <div className="absolute top-2 left-2 text-[11px] text-gray-500 font-medium">
                   {FLOORS.find((f) => f.floor === selectedFloor)?.label}
                 </div>
 
@@ -204,8 +196,8 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                     y="85"
                     width="500"
                     height="30"
-                    fill="#f3f4f6"
-                    stroke="#d1d5db"
+                    fill="#f9fafb"
+                    stroke="#e5e7eb"
                     strokeWidth="1"
                   />
                   <text x="280" y="104" textAnchor="middle" className="text-[10px] fill-gray-400">
@@ -218,7 +210,7 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                     y="75"
                     width="20"
                     height="50"
-                    fill="#6366f1"
+                    fill="#6b7280"
                     rx="2"
                   />
                   <text x="20" y="105" textAnchor="middle" className="text-[8px] fill-white font-medium">
@@ -240,20 +232,20 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                           y={adjustedY}
                           width="60"
                           height="40"
-                          rx="4"
+                          rx="2"
                           fill={
                             room.status === "dirty"
                               ? isInRoute
-                                ? "#fef3c7"
-                                : "#fee2e2"
-                              : "#dcfce7"
+                                ? "#fef9c3"
+                                : "#fef2f2"
+                              : "#f0fdf4"
                           }
                           stroke={
                             room.status === "dirty"
                               ? isInRoute
-                                ? "#f59e0b"
-                                : "#ef4444"
-                              : "#22c55e"
+                                ? "#ca8a04"
+                                : "#dc2626"
+                              : "#16a34a"
                           }
                           strokeWidth={isInRoute ? "2" : "1"}
                           className="transition-all duration-300"
@@ -264,7 +256,7 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                           x={room.x + 30}
                           y={adjustedY + 18}
                           textAnchor="middle"
-                          className="text-[11px] font-semibold fill-gray-700"
+                          className="text-[11px] font-semibold fill-gray-800"
                         >
                           {room.id}
                         </text>
@@ -274,8 +266,8 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                           x={room.x + 30}
                           y={adjustedY + 32}
                           textAnchor="middle"
-                          className={`text-[8px] ${
-                            room.status === "dirty" ? "fill-red-500" : "fill-green-600"
+                          className={`text-[8px] font-medium ${
+                            room.status === "dirty" ? "fill-red-600" : "fill-green-600"
                           }`}
                         >
                           {room.status.toUpperCase()}
@@ -288,7 +280,7 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                               cx={room.x + 55}
                               cy={adjustedY + 5}
                               r="10"
-                              fill="#6366f1"
+                              fill="#1a1a1a"
                             />
                             <text
                               x={room.x + 55}
@@ -323,7 +315,7 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                             y1={fromY}
                             x2={toRoom.x + 30}
                             y2={toY}
-                            stroke="#6366f1"
+                            stroke="#1a1a1a"
                             strokeWidth="2"
                             strokeDasharray="5,5"
                             className="animate-pulse"
@@ -335,22 +327,22 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                 </svg>
 
                 {/* Legend */}
-                <div className="flex items-center justify-center gap-6 mt-4 text-xs">
+                <div className="flex items-center justify-center gap-6 mt-4 text-[11px] text-gray-600">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded bg-green-100 border border-green-500" />
+                    <span className="w-4 h-4 rounded-sm bg-green-50 border border-green-600" />
                     Clean
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded bg-red-100 border border-red-500" />
+                    <span className="w-4 h-4 rounded-sm bg-red-50 border border-red-600" />
                     Needs Cleaning
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded bg-amber-100 border-2 border-amber-500" />
-                    In Optimized Route
+                    <span className="w-4 h-4 rounded-sm bg-yellow-100 border-2 border-yellow-600" />
+                    In Route
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[8px] flex items-center justify-center font-bold">1</span>
-                    Route Order
+                    <span className="w-4 h-4 rounded-full bg-[#1a1a1a] text-white text-[8px] flex items-center justify-center font-bold">1</span>
+                    Order
                   </span>
                 </div>
               </div>
@@ -359,35 +351,35 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
             {/* Right Panel - Controls & Stats */}
             <div className="space-y-4">
               {/* Optimization Button */}
-              <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-lg p-4 border border-indigo-100">
+              <div className="bg-gray-50 rounded-sm p-4 border border-gray-200">
                 {!isOptimizing && !optimizationComplete && (
                   <button
                     onClick={runOptimization}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-indigo-700 hover:to-violet-700 transition-all shadow-lg shadow-indigo-200"
+                    className="w-full bg-[#1a1a1a] text-white py-3 px-4 rounded-sm text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#2a2a2a] transition-all"
                   >
-                    <Play className="w-5 h-5" />
-                    Run AI Optimization
+                    <Play className="w-4 h-4" />
+                    Run Optimization
                   </button>
                 )}
 
                 {isOptimizing && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm font-medium text-indigo-700">Optimizing...</span>
+                      <div className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-[13px] font-medium text-gray-700">Optimizing...</span>
                     </div>
                     <div className="space-y-2">
                       {[1, 2, 3, 4, 5].map((step) => (
                         <div
                           key={step}
-                          className={`flex items-center gap-2 text-xs transition-all ${
-                            currentStep >= step ? "text-indigo-600" : "text-gray-400"
+                          className={`flex items-center gap-2 text-[11px] transition-all ${
+                            currentStep >= step ? "text-gray-800" : "text-gray-400"
                           }`}
                         >
                           {currentStep > step ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
                           ) : currentStep === step ? (
-                            <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                           ) : (
                             <div className="w-4 h-4 rounded-full border border-gray-300" />
                           )}
@@ -406,13 +398,13 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
 
                 {optimizationComplete && (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-green-700">
                       <CheckCircle2 className="w-5 h-5" />
-                      <span className="font-medium">Optimization Complete</span>
+                      <span className="font-medium text-[13px]">Optimization Complete</span>
                     </div>
                     <button
                       onClick={resetOptimization}
-                      className="w-full bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
+                      className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-sm text-[12px] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
                     >
                       <RotateCcw className="w-4 h-4" />
                       Reset
@@ -422,10 +414,10 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
               </div>
 
               {/* Savings Stats */}
-              <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+              <div className="bg-white rounded-sm border border-gray-200 divide-y divide-gray-100">
                 <div className="p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <TrendingDown className="w-4 h-4 text-green-500" />
+                  <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4 text-green-600" />
                     Projected Savings
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -433,47 +425,43 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                       icon={<Route className="w-4 h-4" />}
                       label="Distance"
                       value={`${stats.distanceSaved}m`}
-                      color="blue"
                     />
                     <StatBox
                       icon={<Clock className="w-4 h-4" />}
                       label="Time"
                       value={`${stats.timeSaved} min`}
-                      color="amber"
                     />
                     <StatBox
                       icon={<DollarSign className="w-4 h-4" />}
                       label="Cost"
                       value={`$${stats.costSaved}`}
-                      color="green"
                     />
                     <StatBox
                       icon={<Zap className="w-4 h-4" />}
                       label="Efficiency"
                       value={`+${stats.efficiencyGain}%`}
-                      color="violet"
                     />
                   </div>
                 </div>
 
                 {/* How It Works */}
                 <div className="p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">How It Works</h3>
-                  <div className="space-y-2 text-xs text-gray-600">
+                  <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3">How It Works</h3>
+                  <div className="space-y-2 text-[11px] text-gray-600">
                     <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
-                      <span>AI analyzes all room states, VIP arrivals, and checkout times</span>
+                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">1</span>
+                      <span>Analyzes all room states, VIP arrivals, and checkout times</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">2</span>
                       <span>Calculates shortest path using traveling salesman algorithm</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">3</span>
                       <span>Assigns rooms to attendants based on proximity and workload</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
+                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">4</span>
                       <span>Reduces walking time by up to 40%, saving labor costs</span>
                     </div>
                   </div>
@@ -484,7 +472,7 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
               {optimizationComplete && (
                 <button
                   onClick={onClose}
-                  className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-green-700 transition-all"
+                  className="w-full bg-[#2E7D32] text-white py-3 px-4 rounded-sm text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#256025] transition-all"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   Apply Optimized Route
@@ -502,27 +490,18 @@ function StatBox({
   icon,
   label,
   value,
-  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  color: "blue" | "amber" | "green" | "violet";
 }) {
-  const colors = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    amber: "bg-amber-50 text-amber-600 border-amber-100",
-    green: "bg-green-50 text-green-600 border-green-100",
-    violet: "bg-violet-50 text-violet-600 border-violet-100",
-  };
-
   return (
-    <div className={`p-3 rounded-lg border ${colors[color]}`}>
-      <div className="flex items-center gap-1.5 mb-1">
+    <div className="p-3 rounded-sm border border-gray-200 bg-gray-50">
+      <div className="flex items-center gap-1.5 mb-1 text-gray-500">
         {icon}
-        <span className="text-[10px] uppercase tracking-wide font-medium opacity-70">{label}</span>
+        <span className="text-[10px] uppercase tracking-wide font-medium">{label}</span>
       </div>
-      <div className="text-lg font-bold">{value}</div>
+      <div className="text-[18px] font-semibold text-gray-900">{value}</div>
     </div>
   );
 }
