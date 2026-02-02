@@ -1,245 +1,392 @@
 "use client";
 
-import { useState } from "react";
-import IntelligenceSidebar from "@/components/copilot/IntelligenceSidebar";
+import { useState, useCallback } from "react";
+import AgentChat from "@/components/copilot/AgentChat";
+import AgentTaskPanel, {
+  TaskPlan,
+  AgentTask,
+} from "@/components/copilot/AgentTaskPanel";
 import {
   Search,
   ChevronDown,
   Settings,
   HelpCircle,
   RefreshCw,
-  Plus,
   MoreVertical,
+  Star,
+  AlertTriangle,
+  Heart,
+  Calendar,
+  Users,
 } from "lucide-react";
 
-// Mock OPERA arrivals data (what OPERA shows - just basic info)
+// Mock OPERA arrivals data with intelligence overlay
 const operaArrivals = [
-  { name: "Adams, Courtney", confirmation: "84012367", arrival: "02/15/2024", departure: "02/17/2024", nights: 2, roomType: "SUP", status: "Assign Room" },
-  { name: "Bailey, Austin", confirmation: "84023891", arrival: "02/15/2024", departure: "02/16/2024", nights: 1, roomType: "DLX", status: "Assign Room" },
-  { name: "Chen, Marcus", confirmation: "83901122", arrival: "02/15/2024", departure: "02/16/2024", nights: 1, roomType: "EXE", status: "Pre-Assigned" },
-  { name: "Dance Revolution", confirmation: "83890012", arrival: "02/15/2024", departure: "02/19/2024", nights: 4, roomType: "GRP", status: "7 Rooms" },
-  { name: "Kiser, Piper", confirmation: "83924751", arrival: "02/15/2024", departure: "02/18/2024", nights: 3, roomType: "DXS", status: "Pre-Assigned" },
-  { name: "Kiser, Piper", confirmation: "83924752", arrival: "02/18/2024", departure: "02/20/2024", nights: 2, roomType: "DXS", status: "Assign Room" },
-  { name: "Martinez, Sofia", confirmation: "84031245", arrival: "02/15/2024", departure: "02/17/2024", nights: 2, roomType: "STD", status: "Assign Room" },
-  { name: "Thompson, David", confirmation: "84029876", arrival: "02/15/2024", departure: "02/16/2024", nights: 1, roomType: "SUP", status: "Assign Room" },
+  {
+    name: "Kiser, Piper",
+    confirmation: "83924751",
+    arrival: "02/15/2024",
+    departure: "02/18/2024",
+    nights: 3,
+    roomType: "DXS",
+    status: "Pre-Assigned",
+    room: "801",
+    vip: "VVIP",
+    stayCount: 26,
+    occasion: "Anniversary",
+    dietary: null,
+    intelligence: {
+      preferences: ["High floor", "Extra pillows", "Turndown 9pm"],
+      predicted: ["Spa booking day 2", "Late checkout"],
+      actions: 3,
+    },
+  },
+  {
+    name: "Adams, Courtney",
+    confirmation: "84012367",
+    arrival: "02/15/2024",
+    departure: "02/17/2024",
+    nights: 2,
+    roomType: "SUP",
+    status: "Assign Room",
+    room: null,
+    vip: null,
+    stayCount: 1,
+    occasion: null,
+    dietary: "Shellfish allergy",
+    intelligence: {
+      preferences: ["Quiet room"],
+      predicted: ["Restaurant recommendation"],
+      actions: 2,
+    },
+  },
+  {
+    name: "Chen, Marcus",
+    confirmation: "83901122",
+    arrival: "02/15/2024",
+    departure: "02/16/2024",
+    nights: 1,
+    roomType: "EXE",
+    status: "Pre-Assigned",
+    room: "605",
+    vip: "VIP",
+    stayCount: 8,
+    occasion: null,
+    dietary: "Vegetarian",
+    intelligence: {
+      preferences: ["High floor", "City view", "Extra workspace"],
+      predicted: ["Express checkout", "Wake-up 5:30am"],
+      actions: 2,
+    },
+  },
+  {
+    name: "Bailey, Austin",
+    confirmation: "84023891",
+    arrival: "02/15/2024",
+    departure: "02/16/2024",
+    nights: 1,
+    roomType: "DLX",
+    status: "Assign Room",
+    room: null,
+    vip: null,
+    stayCount: 3,
+    occasion: null,
+    dietary: null,
+    intelligence: {
+      preferences: ["Low floor", "Near elevator"],
+      predicted: [],
+      actions: 0,
+    },
+  },
+  {
+    name: "Martinez, Sofia",
+    confirmation: "84031245",
+    arrival: "02/15/2024",
+    departure: "02/17/2024",
+    nights: 2,
+    roomType: "STD",
+    status: "Assign Room",
+    room: null,
+    vip: null,
+    stayCount: 1,
+    occasion: "Birthday",
+    dietary: null,
+    intelligence: {
+      preferences: [],
+      predicted: ["Birthday amenity"],
+      actions: 1,
+    },
+  },
+  {
+    name: "Thompson, David",
+    confirmation: "84029876",
+    arrival: "02/15/2024",
+    departure: "02/16/2024",
+    nights: 1,
+    roomType: "SUP",
+    status: "Assign Room",
+    room: null,
+    vip: null,
+    stayCount: 5,
+    occasion: null,
+    dietary: "Gluten-free",
+    intelligence: {
+      preferences: ["Firm mattress"],
+      predicted: ["In-room dining"],
+      actions: 1,
+    },
+  },
 ];
 
-export default function CopilotDemoPage() {
-  const [showSidebar, setShowSidebar] = useState(true);
+export default function CopilotPage() {
+  const [taskPlan, setTaskPlan] = useState<TaskPlan | null>(null);
+  const [selectedArrival, setSelectedArrival] = useState<string | null>(null);
+
+  const handleTaskPlanGenerated = useCallback((plan: TaskPlan) => {
+    setTaskPlan(plan);
+  }, []);
+
+  const handleApprove = useCallback(() => {
+    if (!taskPlan) return;
+
+    // Start execution
+    setTaskPlan((prev) =>
+      prev ? { ...prev, status: "executing" } : null
+    );
+
+    // Simulate task execution
+    const tasks = taskPlan.tasks;
+    let currentIndex = 0;
+
+    const executeNext = () => {
+      if (currentIndex >= tasks.length) {
+        // All done
+        setTaskPlan((prev) =>
+          prev ? { ...prev, status: "completed" } : null
+        );
+        return;
+      }
+
+      // Set current task to running
+      setTaskPlan((prev) => {
+        if (!prev) return null;
+        const newTasks = [...prev.tasks];
+        newTasks[currentIndex] = { ...newTasks[currentIndex], status: "running" };
+        return { ...prev, tasks: newTasks };
+      });
+
+      // Simulate execution time
+      const delay = 800 + Math.random() * 1200;
+      setTimeout(() => {
+        // Complete the task
+        setTaskPlan((prev) => {
+          if (!prev) return null;
+          const newTasks = [...prev.tasks];
+          newTasks[currentIndex] = {
+            ...newTasks[currentIndex],
+            status: "completed",
+            result: getTaskResult(newTasks[currentIndex]),
+            duration: Math.round(delay),
+          };
+          return { ...prev, tasks: newTasks };
+        });
+
+        currentIndex++;
+        executeNext();
+      }, delay);
+    };
+
+    executeNext();
+  }, [taskPlan]);
+
+  const handleCancel = useCallback(() => {
+    setTaskPlan((prev) =>
+      prev ? { ...prev, status: "cancelled" } : null
+    );
+    setTimeout(() => setTaskPlan(null), 500);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setTaskPlan(null);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
-      {/* OPERA-style header simulation */}
-      <div className="bg-[#1a1a1a] h-10 flex items-center justify-between px-4 text-white text-[12px]">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold">OPERA Cloud</span>
-          <span className="text-gray-400">|</span>
-          <span>Four Seasons Park Lane</span>
+    <div className="h-screen flex flex-col bg-[#f5f5f5]">
+      {/* Header */}
+      <div className="bg-[#1a1a1a] h-12 flex items-center justify-between px-4 text-white shrink-0">
+        <div className="flex items-center gap-4 text-sm">
+          <span className="font-semibold">Four Seasons</span>
+          <span className="text-gray-500">|</span>
+          <span className="text-gray-400">Park Lane • Copilot</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 text-sm">
           <span className="text-gray-400">Monday, February 15, 2024</span>
-          <span>M. Cocuron</span>
-        </div>
-      </div>
-
-      {/* OPERA navigation bar simulation */}
-      <div className="bg-[#0d9488] h-9 flex items-center px-4 text-white text-[12px] gap-4">
-        <span className="font-semibold">Front Desk</span>
-        <span>▾</span>
-        <span className="text-white/70">Arrivals</span>
-      </div>
-
-      {/* Page title bar */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-[18px] font-medium text-gray-900">Arrivals</h1>
-          <div className="text-[12px] text-gray-500">
-            Home / Front Desk / Arrivals
+          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs">
+            MC
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-1 text-[12px] text-[#0d9488]">
-            <HelpCircle size={14} />
-            Help
-          </button>
-          <button
-            onClick={() => setShowSidebar(!showSidebar)}
-            className={`px-3 py-1.5 rounded text-[12px] font-medium transition-all ${
-              showSidebar
-                ? "bg-[#0d9488] text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {showSidebar ? "★ Intelligence ON" : "☆ Intelligence OFF"}
-          </button>
-        </div>
       </div>
 
-      {/* Main content area with sidebar */}
-      <div className={`transition-all duration-300 ${showSidebar ? "mr-96" : ""}`}>
-        {/* Search Panel */}
-        <div className="bg-[#e8e8e8] m-4 rounded">
-          <div className="bg-gray-600 text-white px-4 py-2 text-[13px] font-medium rounded-t flex items-center justify-between">
-            <span>Search</span>
-            <ChevronDown size={16} />
-          </div>
-          <div className="p-4">
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <label className="block text-[11px] text-gray-600 mb-1">Arrival Date</label>
-                <input
-                  type="text"
-                  value="02/15/2024"
-                  readOnly
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-[12px]"
-                />
+      {/* Main 3-Column Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Chat */}
+        <div className="w-96 shrink-0">
+          <AgentChat
+            onTaskPlanGenerated={handleTaskPlanGenerated}
+            currentPlan={taskPlan}
+          />
+        </div>
+
+        {/* Middle Column - Arrivals */}
+        <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-200">
+          {/* Arrivals Header */}
+          <div className="bg-white border-b border-gray-200 px-4 py-3 shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-gray-400" />
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900">Today's Arrivals</h1>
+                  <div className="text-xs text-gray-500">
+                    {operaArrivals.length} guests • {operaArrivals.filter((a) => a.vip).length} VIPs • {operaArrivals.filter((a) => a.occasion).length} special occasions
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-[11px] text-gray-600 mb-1">To Date</label>
-                <input
-                  type="text"
-                  value="02/15/2024"
-                  readOnly
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-[12px]"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-600 mb-1">Reservation Status</label>
-                <select className="w-full px-2 py-1.5 border border-gray-300 rounded text-[12px]">
-                  <option>Due In</option>
-                </select>
-              </div>
-              <div className="flex items-end">
-                <button className="px-4 py-1.5 bg-[#0d9488] text-white rounded text-[12px] font-medium">
-                  Search
+              <div className="flex items-center gap-2">
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <RefreshCw className="w-4 h-4 text-gray-500" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <Settings className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Results table - simulating OPERA arrivals list */}
-        <div className="mx-4 bg-white rounded shadow">
-          <div className="px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-            <span className="text-[13px] font-medium text-gray-700">
-              Arrivals: {operaArrivals.length} reservations
-            </span>
-            <div className="flex items-center gap-2">
-              <button className="p-1.5 hover:bg-gray-100 rounded">
-                <RefreshCw size={14} className="text-gray-500" />
-              </button>
-              <button className="p-1.5 hover:bg-gray-100 rounded">
-                <Settings size={14} className="text-gray-500" />
-              </button>
-            </div>
-          </div>
-
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Name
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Confirmation
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Arrival
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Departure
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Nights
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Room Type
-                </th>
-                <th className="px-4 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">
-                  Status
-                </th>
-                <th className="px-4 py-2"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          {/* Arrivals List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-3">
               {operaArrivals.map((arrival, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-[13px] text-[#0d9488] font-medium cursor-pointer hover:underline">
-                    {arrival.name}
-                  </td>
-                  <td className="px-4 py-3 text-[13px] text-gray-600">{arrival.confirmation}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-600">{arrival.arrival}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-600">{arrival.departure}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-600">{arrival.nights}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-600">{arrival.roomType}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded text-[11px] ${
-                        arrival.status === "Pre-Assigned"
-                          ? "bg-green-100 text-green-700"
-                          : arrival.status.includes("Room")
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {arrival.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <MoreVertical size={14} className="text-gray-400" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                <div
+                  key={idx}
+                  onClick={() => setSelectedArrival(arrival.confirmation)}
+                  className={`bg-white rounded-lg border p-4 cursor-pointer transition-all hover:shadow-md ${
+                    selectedArrival === arrival.confirmation
+                      ? "border-amber-400 ring-2 ring-amber-100"
+                      : "border-gray-200"
+                  }`}
+                >
+                  {/* Header Row */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-semibold text-gray-900">
+                          {arrival.name}
+                        </span>
+                        {arrival.vip && (
+                          <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
+                            arrival.vip === "VVIP"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}>
+                            {arrival.vip}
+                          </span>
+                        )}
+                        {arrival.stayCount > 1 && (
+                          <span className="text-xs text-gray-400">
+                            {arrival.stayCount} stays
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {arrival.roomType} • {arrival.nights} night{arrival.nights > 1 ? "s" : ""} • {arrival.status}
+                        {arrival.room && <span className="text-gray-700 font-medium"> → Room {arrival.room}</span>}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-400">{arrival.confirmation}</div>
+                      {arrival.intelligence.actions > 0 && (
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-medium rounded">
+                          {arrival.intelligence.actions} actions
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-        {/* Explanation Panel */}
-        <div className="m-4 p-4 bg-blue-50 border border-blue-200 rounded">
-          <h3 className="text-[14px] font-semibold text-blue-800 mb-2">
-            The Copilot Model: Intelligence Sidebar
-          </h3>
-          <p className="text-[12px] text-blue-700 mb-3">
-            The table above shows what OPERA displays: names, dates, confirmation numbers.
-            The sidebar on the right is what Four Seasons Intelligence adds—guest context,
-            action items, preferences, and predicted needs. Staff don't leave OPERA;
-            they just get smarter alongside it.
-          </p>
-          <div className="grid grid-cols-3 gap-4 text-[11px]">
-            <div>
-              <div className="font-semibold text-blue-800 mb-1">Without Intelligence</div>
-              <ul className="text-blue-700 space-y-0.5">
-                <li>• 8 arrivals today</li>
-                <li>• Names and room types</li>
-                <li>• No guest context</li>
-                <li>• Click each profile manually</li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold text-blue-800 mb-1">With Intelligence</div>
-              <ul className="text-blue-700 space-y-0.5">
-                <li>• 8 arrivals including 2 VIPs</li>
-                <li>• 1 anniversary, 1 allergy flagged</li>
-                <li>• 5 action items auto-generated</li>
-                <li>• Pre-arrival requests captured</li>
-              </ul>
-            </div>
-            <div>
-              <div className="font-semibold text-blue-800 mb-1">Integration Path</div>
-              <ul className="text-blue-700 space-y-0.5">
-                <li>• Phase 1: Sidebar (read-only)</li>
-                <li>• Phase 2: OPERA API write-back</li>
-                <li>• Phase 3: Purpose-built interfaces</li>
-              </ul>
+                  {/* Intelligence Row */}
+                  <div className="flex flex-wrap gap-2">
+                    {arrival.occasion && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded text-xs">
+                        <Heart className="w-3 h-3" />
+                        {arrival.occasion}
+                      </div>
+                    )}
+                    {arrival.dietary && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs">
+                        <AlertTriangle className="w-3 h-3" />
+                        {arrival.dietary}
+                      </div>
+                    )}
+                    {arrival.intelligence.preferences.slice(0, 2).map((pref, i) => (
+                      <div key={i} className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                        {pref}
+                      </div>
+                    ))}
+                    {arrival.intelligence.preferences.length > 2 && (
+                      <div className="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">
+                        +{arrival.intelligence.preferences.length - 2} more
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Predicted Needs */}
+                  {arrival.intelligence.predicted.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
+                        Predicted needs
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {arrival.intelligence.predicted.map((need, i) => (
+                          <span key={i} className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            {need}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+
+        {/* Right Column - Task Execution Panel */}
+        <div className="w-96 shrink-0 bg-gray-50 border-l border-gray-200">
+          <AgentTaskPanel
+            plan={taskPlan}
+            onApprove={handleApprove}
+            onCancel={handleCancel}
+            onClose={handleClose}
+          />
         </div>
       </div>
-
-      {/* Intelligence Sidebar */}
-      {showSidebar && <IntelligenceSidebar mode="arrivals" />}
     </div>
   );
+}
+
+// Helper to generate realistic task results
+function getTaskResult(task: AgentTask): string {
+  switch (task.type) {
+    case "api_call":
+      return "Successfully retrieved data from system";
+    case "query":
+      return "Found 8 matching records";
+    case "notification":
+      return "Notification sent successfully";
+    case "update":
+      return "System updated successfully";
+    case "action":
+      return "Action completed";
+    default:
+      return "Completed";
+  }
 }

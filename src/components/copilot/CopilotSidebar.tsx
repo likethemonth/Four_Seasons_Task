@@ -324,17 +324,6 @@ export default function CopilotSidebar() {
           <button
             onClick={() => {
               setIsMinimized(false);
-              setActiveTab("arrivals");
-            }}
-            className={`p-2 rounded transition-colors ${
-              activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-700"
-            }`}
-          >
-            <Users size={18} className="text-white" />
-          </button>
-          <button
-            onClick={() => {
-              setIsMinimized(false);
               setActiveTab("chat");
             }}
             className={`p-2 rounded transition-colors ${
@@ -342,6 +331,17 @@ export default function CopilotSidebar() {
             }`}
           >
             <MessageSquare size={18} className="text-white" />
+          </button>
+          <button
+            onClick={() => {
+              setIsMinimized(false);
+              setActiveTab("arrivals");
+            }}
+            className={`p-2 rounded transition-colors ${
+              activeTab === "arrivals" ? "bg-white/20" : "hover:bg-gray-700"
+            }`}
+          >
+            <Users size={18} className="text-white" />
           </button>
           <button
             onClick={() => {
@@ -391,6 +391,17 @@ export default function CopilotSidebar() {
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-gray-50">
         <button
+          onClick={() => setActiveTab("chat")}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${
+            activeTab === "chat"
+              ? "text-black border-b-2 border-black bg-white"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          <MessageSquare size={14} />
+          Chat
+        </button>
+        <button
           onClick={() => {
             setActiveTab("arrivals");
             setSelectedGuest(null);
@@ -403,17 +414,6 @@ export default function CopilotSidebar() {
         >
           <Users size={14} />
           Arrivals
-        </button>
-        <button
-          onClick={() => setActiveTab("chat")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] font-medium transition-colors ${
-            activeTab === "chat"
-              ? "text-black border-b-2 border-black bg-white"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <MessageSquare size={14} />
-          Chat
         </button>
         <button
           onClick={() => setActiveTab("housekeeping")}
