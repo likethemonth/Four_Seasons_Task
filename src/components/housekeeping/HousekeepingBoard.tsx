@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   LayoutGrid,
   List,
@@ -8,218 +8,109 @@ import {
   Building2,
   Filter,
   RefreshCw,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  XCircle,
-  ChevronDown,
   Search,
+  Star,
+  Eye,
+  MapPin,
+  Clock,
+  User,
+  Bed,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import {
+  getHotelRooms,
+  getRoomsByFloor,
+  getFloorSummary,
+  FLOOR_LAYOUTS,
+  HOUSEKEEPING_STAFF,
+  ROOM_CATEGORIES,
+  type Room,
+  type HousekeepingStaff,
+} from "@/lib/data/parkLaneRooms";
 
-// OPERA-compatible status types
-type RoomStatus = "clean" | "dirty" | "pickup" | "inspected" | "ooo" | "oos";
-type FOStatus = "vacant" | "occupied";
-type ReservationStatus = "arrival" | "arrived" | "stayover" | "due_out" | "departed" | "not_reserved";
-
-interface HousekeepingTask {
-  id: string;
-  roomNumber: string;
-  roomType: "suite" | "deluxe" | "standard";
-  floor: number;
-  checkoutTime: string;
-  nextArrival?: string;
-  nextGuestVip: boolean;
-  nextGuestPreferences?: string[];
-  priority: number;
-  priorityLevel: "high" | "medium" | "low";
-  assignedTo?: string[];
-  status: "pending" | "assigned" | "in_progress" | "complete";
-  opera?: {
-    roomStatus?: string;
-    hkStatus?: string;
-    foStatus?: string;
-    vipCode?: string;
-  };
-}
-
-interface Housekeeper {
-  id: string;
-  name: string;
-  currentFloor: number;
-  assignedRooms: number;
-  status: "available" | "busy" | "break";
-}
-
-interface QueueData {
-  queue: HousekeepingTask[];
-  staff: Housekeeper[];
-  summary: {
-    pending: number;
-    inProgress: number;
-    staffAvailable: number;
-    staffBusy: number;
-    staffOnBreak: number;
-  };
-}
-
-// OPERA status color mapping
+// Status color mapping
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   clean: { bg: "bg-green-100", text: "text-green-700", border: "border-green-300" },
   inspected: { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-300" },
   dirty: { bg: "bg-red-100", text: "text-red-700", border: "border-red-300" },
   pickup: { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300" },
-  ooo: { bg: "bg-gray-200", text: "text-gray-600", border: "border-gray-400" },
+  ooo: { bg: "bg-gray-300", text: "text-gray-600", border: "border-gray-400" },
   oos: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-300" },
-  pending: { bg: "bg-red-100", text: "text-red-700", border: "border-red-300" },
-  assigned: { bg: "bg-yellow-100", text: "text-yellow-700", border: "border-yellow-300" },
-  in_progress: { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-300" },
-  complete: { bg: "bg-green-100", text: "text-green-700", border: "border-green-300" },
 };
 
-const PRIORITY_COLORS = {
-  high: "border-l-red-500",
-  medium: "border-l-yellow-500",
-  low: "border-l-green-500",
+const FO_STATUS_COLORS: Record<string, string> = {
+  vacant: "text-gray-500",
+  occupied: "text-blue-600",
+  due_out: "text-orange-600",
+  arrival: "text-purple-600",
+  departed: "text-gray-400",
 };
 
 type ViewMode = "board" | "floor" | "list" | "attendant";
 
 export default function HousekeepingBoard() {
-  const [data, setData] = useState<QueueData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("board");
   const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     status: "all",
+    foStatus: "all",
     floor: "all",
-    priority: "all",
-    assignee: "all",
+    category: "all",
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedFloor, setExpandedFloor] = useState<number | null>(null);
 
-  const fetchQueue = useCallback(async () => {
-    try {
-      const res = await fetch("/api/housekeeping/queue");
-      const json = await res.json();
-      if (json.success) {
-        setData(json.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch queue:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Get all rooms
+  const allRooms = useMemo(() => getHotelRooms(), []);
 
-  useEffect(() => {
-    fetchQueue();
-    const interval = setInterval(fetchQueue, 5000);
-    return () => clearInterval(interval);
-  }, [fetchQueue]);
+  // Filter rooms
+  const filteredRooms = useMemo(() => {
+    return allRooms.filter((room) => {
+      if (filters.status !== "all" && room.roomStatus !== filters.status) return false;
+      if (filters.foStatus !== "all" && room.foStatus !== filters.foStatus) return false;
+      if (filters.floor !== "all" && room.floor !== parseInt(filters.floor)) return false;
+      if (filters.category !== "all" && room.category !== filters.category) return false;
+      if (searchQuery && !room.roomNumber.includes(searchQuery)) return false;
+      return true;
+    });
+  }, [allRooms, filters, searchQuery]);
 
-  const handleStatusUpdate = async (taskId: string, status: string) => {
-    try {
-      await fetch(`/api/housekeeping/task/${taskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      fetchQueue();
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    }
-  };
+  // Get unique values for filters
+  const floors = [...new Set(allRooms.map((r) => r.floor))].sort();
+  const categories = [...new Set(allRooms.map((r) => r.category))];
 
-  const handleBulkStatusUpdate = async (status: string) => {
-    for (const roomId of selectedRooms) {
-      await handleStatusUpdate(roomId, status);
-    }
-    setSelectedRooms(new Set());
-  };
+  // Calculate statistics
+  const stats = useMemo(() => ({
+    total: allRooms.length,
+    clean: allRooms.filter((r) => r.roomStatus === "clean").length,
+    inspected: allRooms.filter((r) => r.roomStatus === "inspected").length,
+    dirty: allRooms.filter((r) => r.roomStatus === "dirty").length,
+    pickup: allRooms.filter((r) => r.roomStatus === "pickup").length,
+    occupied: allRooms.filter((r) => r.foStatus === "occupied").length,
+    arrivals: allRooms.filter((r) => r.foStatus === "arrival").length,
+    departures: allRooms.filter((r) => r.foStatus === "due_out").length,
+    vip: allRooms.filter((r) => r.isVip).length,
+  }), [allRooms]);
 
-  const handleCheckout = async (roomNumber: string, vip: boolean = false) => {
-    try {
-      await fetch("/api/housekeeping/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roomNumber,
-          nextArrival: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-          nextGuestVip: vip,
-        }),
-      });
-      fetchQueue();
-    } catch (error) {
-      console.error("Failed to trigger checkout:", error);
-    }
-  };
-
-  const toggleRoomSelection = (taskId: string) => {
+  const toggleRoomSelection = (roomNumber: string) => {
     const newSelection = new Set(selectedRooms);
-    if (newSelection.has(taskId)) {
-      newSelection.delete(taskId);
+    if (newSelection.has(roomNumber)) {
+      newSelection.delete(roomNumber);
     } else {
-      newSelection.add(taskId);
+      newSelection.add(roomNumber);
     }
     setSelectedRooms(newSelection);
   };
 
   const selectAllRooms = () => {
-    if (selectedRooms.size === filteredQueue.length) {
+    if (selectedRooms.size === filteredRooms.length) {
       setSelectedRooms(new Set());
     } else {
-      setSelectedRooms(new Set(filteredQueue.map((t) => t.id)));
+      setSelectedRooms(new Set(filteredRooms.map((r) => r.roomNumber)));
     }
   };
-
-  // Filter queue based on current filters
-  const filteredQueue = (data?.queue || []).filter((task) => {
-    if (filters.status !== "all" && task.status !== filters.status) return false;
-    if (filters.floor !== "all" && task.floor !== parseInt(filters.floor)) return false;
-    if (filters.priority !== "all" && task.priorityLevel !== filters.priority) return false;
-    if (filters.assignee !== "all") {
-      if (filters.assignee === "unassigned" && task.assignedTo?.length) return false;
-      if (filters.assignee !== "unassigned" && !task.assignedTo?.includes(filters.assignee)) return false;
-    }
-    if (searchQuery && !task.roomNumber.includes(searchQuery)) return false;
-    return true;
-  });
-
-  // Group tasks by floor for floor view
-  const tasksByFloor = filteredQueue.reduce((acc, task) => {
-    if (!acc[task.floor]) acc[task.floor] = [];
-    acc[task.floor].push(task);
-    return acc;
-  }, {} as Record<number, HousekeepingTask[]>);
-
-  // Group tasks by attendant for attendant view
-  const tasksByAttendant = (data?.staff || []).map((staff) => ({
-    ...staff,
-    tasks: filteredQueue.filter((t) => t.assignedTo?.includes(staff.id)),
-  }));
-
-  // Get unique floors for filter
-  const floors = [...new Set((data?.queue || []).map((t) => t.floor))].sort();
-
-  // Calculate statistics
-  const stats = {
-    total: data?.queue.length || 0,
-    clean: data?.queue.filter((t) => t.status === "complete").length || 0,
-    dirty: data?.queue.filter((t) => t.status === "pending").length || 0,
-    pickup: data?.queue.filter((t) => t.status === "assigned").length || 0,
-    inProgress: data?.queue.filter((t) => t.status === "in_progress").length || 0,
-    highPriority: data?.queue.filter((t) => t.priorityLevel === "high").length || 0,
-    vipArrivals: data?.queue.filter((t) => t.nextGuestVip).length || 0,
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <RefreshCw size={24} className="animate-spin text-gray-400" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -230,7 +121,7 @@ export default function HousekeepingBoard() {
             onClick={() => setViewMode("board")}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all ${
               viewMode === "board"
-                ? "bg-black text-white"
+                ? "bg-gray-900 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -241,7 +132,7 @@ export default function HousekeepingBoard() {
             onClick={() => setViewMode("floor")}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all ${
               viewMode === "floor"
-                ? "bg-black text-white"
+                ? "bg-gray-900 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -252,7 +143,7 @@ export default function HousekeepingBoard() {
             onClick={() => setViewMode("list")}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all ${
               viewMode === "list"
-                ? "bg-black text-white"
+                ? "bg-gray-900 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -263,7 +154,7 @@ export default function HousekeepingBoard() {
             onClick={() => setViewMode("attendant")}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all ${
               viewMode === "attendant"
-                ? "bg-black text-white"
+                ? "bg-gray-900 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -283,53 +174,26 @@ export default function HousekeepingBoard() {
             <Filter size={16} />
             Filters
           </button>
-          <button
-            onClick={fetchQueue}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-sm bg-gray-100 text-gray-600 hover:bg-gray-200 text-[13px] font-medium"
-          >
-            <RefreshCw size={16} />
-            Refresh
-          </button>
         </div>
       </div>
 
-      {/* Statistics Bar - OPERA Style */}
-      <div className="grid grid-cols-7 gap-2">
-        <div className="bg-white border border-gray-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-gray-900">{stats.total}</div>
-          <div className="text-[11px] text-gray-500 uppercase tracking-wider">Total Rooms</div>
-        </div>
-        <div className="bg-green-50 border border-green-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-green-700">{stats.clean}</div>
-          <div className="text-[11px] text-green-600 uppercase tracking-wider">Clean</div>
-        </div>
-        <div className="bg-red-50 border border-red-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-red-700">{stats.dirty}</div>
-          <div className="text-[11px] text-red-600 uppercase tracking-wider">Dirty</div>
-        </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-yellow-700">{stats.pickup}</div>
-          <div className="text-[11px] text-yellow-600 uppercase tracking-wider">Pickup</div>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-blue-700">{stats.inProgress}</div>
-          <div className="text-[11px] text-blue-600 uppercase tracking-wider">In Progress</div>
-        </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-orange-700">{stats.highPriority}</div>
-          <div className="text-[11px] text-orange-600 uppercase tracking-wider">High Priority</div>
-        </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-sm p-3 text-center">
-          <div className="text-[20px] font-semibold text-purple-700">{stats.vipArrivals}</div>
-          <div className="text-[11px] text-purple-600 uppercase tracking-wider">VIP Arrivals</div>
-        </div>
+      {/* Statistics Bar */}
+      <div className="grid grid-cols-9 gap-2">
+        <StatCard label="Total" value={stats.total} color="gray" />
+        <StatCard label="Clean" value={stats.clean} color="green" />
+        <StatCard label="Inspected" value={stats.inspected} color="emerald" />
+        <StatCard label="Dirty" value={stats.dirty} color="red" />
+        <StatCard label="Pickup" value={stats.pickup} color="yellow" />
+        <StatCard label="Occupied" value={stats.occupied} color="blue" />
+        <StatCard label="Arrivals" value={stats.arrivals} color="purple" />
+        <StatCard label="Departures" value={stats.departures} color="orange" />
+        <StatCard label="VIP" value={stats.vip} color="amber" icon={<Star size={12} />} />
       </div>
 
       {/* Filter Panel */}
       {showFilters && (
         <div className="bg-gray-50 border border-gray-200 rounded-sm p-4">
           <div className="grid grid-cols-5 gap-4">
-            {/* Search */}
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
                 Room Number
@@ -345,24 +209,40 @@ export default function HousekeepingBoard() {
                 />
               </div>
             </div>
-            {/* Status Filter */}
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Room Status
+                HK Status
               </label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px] focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px]"
               >
                 <option value="all">All Statuses</option>
-                <option value="pending">Dirty</option>
-                <option value="assigned">Pickup</option>
-                <option value="in_progress">In Progress</option>
-                <option value="complete">Clean</option>
+                <option value="clean">Clean</option>
+                <option value="inspected">Inspected</option>
+                <option value="dirty">Dirty</option>
+                <option value="pickup">Pickup</option>
+                <option value="ooo">Out of Order</option>
+                <option value="oos">Out of Service</option>
               </select>
             </div>
-            {/* Floor Filter */}
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                FO Status
+              </label>
+              <select
+                value={filters.foStatus}
+                onChange={(e) => setFilters({ ...filters, foStatus: e.target.value })}
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px]"
+              >
+                <option value="all">All</option>
+                <option value="vacant">Vacant</option>
+                <option value="occupied">Occupied</option>
+                <option value="due_out">Due Out</option>
+                <option value="arrival">Arrival</option>
+              </select>
+            </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
                 Floor
@@ -370,7 +250,7 @@ export default function HousekeepingBoard() {
               <select
                 value={filters.floor}
                 onChange={(e) => setFilters({ ...filters, floor: e.target.value })}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px] focus:outline-none focus:border-gray-400"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px]"
               >
                 <option value="all">All Floors</option>
                 {floors.map((floor) => (
@@ -380,37 +260,19 @@ export default function HousekeepingBoard() {
                 ))}
               </select>
             </div>
-            {/* Priority Filter */}
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Priority
+                Room Type
               </label>
               <select
-                value={filters.priority}
-                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px] focus:outline-none focus:border-gray-400"
+                value={filters.category}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px]"
               >
-                <option value="all">All Priorities</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-            {/* Attendant Filter */}
-            <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Attendant
-              </label>
-              <select
-                value={filters.assignee}
-                onChange={(e) => setFilters({ ...filters, assignee: e.target.value })}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-sm text-[13px] focus:outline-none focus:border-gray-400"
-              >
-                <option value="all">All Attendants</option>
-                <option value="unassigned">Unassigned</option>
-                {data?.staff.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
+                <option value="all">All Types</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {ROOM_CATEGORIES[cat]?.label || cat}
                   </option>
                 ))}
               </select>
@@ -419,25 +281,6 @@ export default function HousekeepingBoard() {
         </div>
       )}
 
-      {/* Demo Checkout - Compact */}
-      <div className="bg-blue-50 border border-blue-200 rounded-sm p-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[12px] font-medium text-blue-700">Demo: Trigger Checkout</span>
-          <div className="flex gap-2">
-            {["412", "508", "720", "801", "605"].map((room) => (
-              <button
-                key={room}
-                onClick={() => handleCheckout(room, room === "801" || room === "720")}
-                className="px-2 py-1 bg-white border border-blue-300 rounded-sm text-[12px] text-blue-700 hover:bg-blue-100"
-              >
-                {room}
-                {(room === "801" || room === "720") && <span className="ml-1 text-amber-600">★</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Bulk Actions */}
       {selectedRooms.size > 0 && (
         <div className="bg-gray-900 text-white rounded-sm p-3 flex items-center justify-between">
@@ -445,17 +288,11 @@ export default function HousekeepingBoard() {
             {selectedRooms.size} room{selectedRooms.size > 1 ? "s" : ""} selected
           </span>
           <div className="flex gap-2">
-            <button
-              onClick={() => handleBulkStatusUpdate("in_progress")}
-              className="px-3 py-1 bg-blue-600 rounded-sm text-[12px] hover:bg-blue-700"
-            >
-              Start Cleaning
-            </button>
-            <button
-              onClick={() => handleBulkStatusUpdate("complete")}
-              className="px-3 py-1 bg-green-600 rounded-sm text-[12px] hover:bg-green-700"
-            >
+            <button className="px-3 py-1 bg-green-600 rounded-sm text-[12px] hover:bg-green-700">
               Mark Clean
+            </button>
+            <button className="px-3 py-1 bg-blue-600 rounded-sm text-[12px] hover:bg-blue-700">
+              Assign Attendant
             </button>
             <button
               onClick={() => setSelectedRooms(new Set())}
@@ -467,66 +304,115 @@ export default function HousekeepingBoard() {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="bg-white border border-gray-200 rounded-sm">
-        {filteredQueue.length === 0 ? (
-          <div className="py-12 text-center text-gray-400">
-            <Building2 size={48} className="mx-auto mb-3 opacity-50" />
-            <p className="text-[14px]">No rooms in queue</p>
-            <p className="text-[12px]">Trigger a checkout above to add rooms</p>
-          </div>
-        ) : viewMode === "board" ? (
+        {viewMode === "board" && (
           <RoomBoardView
-            tasks={filteredQueue}
+            rooms={filteredRooms}
             selectedRooms={selectedRooms}
             onToggleSelection={toggleRoomSelection}
             onSelectAll={selectAllRooms}
-            onStatusUpdate={handleStatusUpdate}
-            staff={data?.staff || []}
-          />
-        ) : viewMode === "floor" ? (
-          <FloorView
-            tasksByFloor={tasksByFloor}
-            selectedRooms={selectedRooms}
-            onToggleSelection={toggleRoomSelection}
-            onStatusUpdate={handleStatusUpdate}
-            staff={data?.staff || []}
-          />
-        ) : viewMode === "list" ? (
-          <ListView
-            tasks={filteredQueue}
-            selectedRooms={selectedRooms}
-            onToggleSelection={toggleRoomSelection}
-            onSelectAll={selectAllRooms}
-            onStatusUpdate={handleStatusUpdate}
-            staff={data?.staff || []}
-          />
-        ) : (
-          <AttendantView
-            attendants={tasksByAttendant}
-            onStatusUpdate={handleStatusUpdate}
           />
         )}
+        {viewMode === "floor" && (
+          <FloorPlanView
+            rooms={filteredRooms}
+            selectedRooms={selectedRooms}
+            onToggleSelection={toggleRoomSelection}
+            expandedFloor={expandedFloor}
+            onExpandFloor={setExpandedFloor}
+          />
+        )}
+        {viewMode === "list" && (
+          <ListView
+            rooms={filteredRooms}
+            selectedRooms={selectedRooms}
+            onToggleSelection={toggleRoomSelection}
+            onSelectAll={selectAllRooms}
+          />
+        )}
+        {viewMode === "attendant" && (
+          <AttendantView staff={HOUSEKEEPING_STAFF} rooms={allRooms} />
+        )}
       </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 text-[11px]">
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-sm bg-green-100 border border-green-300" />
+          Clean
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-sm bg-emerald-100 border border-emerald-300" />
+          Inspected
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-sm bg-red-100 border border-red-300" />
+          Dirty
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-sm bg-yellow-100 border border-yellow-300" />
+          Pickup
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-sm bg-gray-300 border border-gray-400" />
+          OOO
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Star size={12} className="text-amber-500" />
+          VIP
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Stat Card Component
+function StatCard({
+  label,
+  value,
+  color,
+  icon,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  icon?: React.ReactNode;
+}) {
+  const colorClasses: Record<string, string> = {
+    gray: "bg-white border-gray-200",
+    green: "bg-green-50 border-green-200 text-green-700",
+    emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+    red: "bg-red-50 border-red-200 text-red-700",
+    yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
+    blue: "bg-blue-50 border-blue-200 text-blue-700",
+    purple: "bg-purple-50 border-purple-200 text-purple-700",
+    orange: "bg-orange-50 border-orange-200 text-orange-700",
+    amber: "bg-amber-50 border-amber-200 text-amber-700",
+  };
+
+  return (
+    <div className={`border rounded-sm p-2 text-center ${colorClasses[color]}`}>
+      <div className="flex items-center justify-center gap-1">
+        {icon}
+        <span className="text-[18px] font-semibold">{value}</span>
+      </div>
+      <div className="text-[10px] uppercase tracking-wider opacity-80">{label}</div>
     </div>
   );
 }
 
 // Room Board View (Grid)
 function RoomBoardView({
-  tasks,
+  rooms,
   selectedRooms,
   onToggleSelection,
   onSelectAll,
-  onStatusUpdate,
-  staff,
 }: {
-  tasks: HousekeepingTask[];
+  rooms: Room[];
   selectedRooms: Set<string>;
-  onToggleSelection: (id: string) => void;
+  onToggleSelection: (roomNumber: string) => void;
   onSelectAll: () => void;
-  onStatusUpdate: (id: string, status: string) => void;
-  staff: Housekeeper[];
 }) {
   return (
     <div className="p-4">
@@ -534,36 +420,20 @@ function RoomBoardView({
         <label className="flex items-center gap-2 text-[13px] text-gray-600">
           <input
             type="checkbox"
-            checked={selectedRooms.size === tasks.length && tasks.length > 0}
+            checked={selectedRooms.size === rooms.length && rooms.length > 0}
             onChange={onSelectAll}
             className="rounded"
           />
-          Select All
+          Select All ({rooms.length} rooms)
         </label>
-        <div className="flex items-center gap-4 text-[11px]">
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-red-100 border border-red-300" /> Dirty
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-yellow-100 border border-yellow-300" /> Pickup
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-blue-100 border border-blue-300" /> In Progress
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-green-100 border border-green-300" /> Clean
-          </span>
-        </div>
       </div>
-      <div className="grid grid-cols-6 gap-3">
-        {tasks.map((task) => (
+      <div className="grid grid-cols-8 gap-2">
+        {rooms.map((room) => (
           <RoomTile
-            key={task.id}
-            task={task}
-            isSelected={selectedRooms.has(task.id)}
-            onToggle={() => onToggleSelection(task.id)}
-            onStatusUpdate={onStatusUpdate}
-            staff={staff}
+            key={room.roomNumber}
+            room={room}
+            isSelected={selectedRooms.has(room.roomNumber)}
+            onToggle={() => onToggleSelection(room.roomNumber)}
           />
         ))}
       </div>
@@ -573,366 +443,404 @@ function RoomBoardView({
 
 // Room Tile Component
 function RoomTile({
-  task,
+  room,
   isSelected,
   onToggle,
-  onStatusUpdate,
-  staff,
+  compact = false,
 }: {
-  task: HousekeepingTask;
+  room: Room;
   isSelected: boolean;
   onToggle: () => void;
-  onStatusUpdate: (id: string, status: string) => void;
-  staff: Housekeeper[];
+  compact?: boolean;
 }) {
-  const colors = STATUS_COLORS[task.status] || STATUS_COLORS.pending;
-  const assignedStaff = staff.filter((s) => task.assignedTo?.includes(s.id));
+  const colors = STATUS_COLORS[room.roomStatus] || STATUS_COLORS.dirty;
 
   return (
     <div
-      className={`relative rounded-sm border-2 ${colors.border} ${colors.bg} p-3 cursor-pointer transition-all hover:shadow-md ${
+      className={`relative rounded-sm border-2 ${colors.border} ${colors.bg} ${
+        compact ? "p-1.5" : "p-2"
+      } cursor-pointer transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-blue-500" : ""
-      } border-l-4 ${PRIORITY_COLORS[task.priorityLevel]}`}
+      }`}
       onClick={onToggle}
     >
-      {/* Selection checkbox */}
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={onToggle}
-        onClick={(e) => e.stopPropagation()}
-        className="absolute top-2 right-2"
-      />
+      {/* VIP Badge */}
+      {room.isVip && (
+        <div className="absolute -top-1 -right-1">
+          <Star size={14} className="text-amber-500 fill-amber-500" />
+        </div>
+      )}
 
       {/* Room Number */}
-      <div className="text-[18px] font-bold text-gray-900">{task.roomNumber}</div>
+      <div className={`font-bold text-gray-900 ${compact ? "text-[13px]" : "text-[16px]"}`}>
+        {room.roomNumber}
+      </div>
 
-      {/* Room Type */}
-      <div className="text-[11px] text-gray-500 uppercase">{task.roomType}</div>
+      {/* Room Type (short) */}
+      <div className={`text-gray-500 truncate ${compact ? "text-[9px]" : "text-[10px]"}`}>
+        {room.category.includes("suite")
+          ? "Suite"
+          : room.category === "deluxe"
+          ? "DLX"
+          : room.category === "premier"
+          ? "PRM"
+          : room.category === "superior"
+          ? "SUP"
+          : room.category === "terrace"
+          ? "TER"
+          : room.category.substring(0, 3).toUpperCase()}
+      </div>
 
-      {/* VIP Badge */}
-      {task.nextGuestVip && (
-        <div className="absolute top-2 left-2">
-          <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[9px] font-bold rounded-sm">
-            VIP
-          </span>
+      {/* FO Status indicator */}
+      {!compact && (
+        <div className={`text-[9px] mt-1 ${FO_STATUS_COLORS[room.foStatus]}`}>
+          {room.foStatus === "occupied" && "OCC"}
+          {room.foStatus === "vacant" && "VAC"}
+          {room.foStatus === "due_out" && "D/O"}
+          {room.foStatus === "arrival" && "ARR"}
         </div>
       )}
 
-      {/* Status */}
-      <div className={`mt-2 text-[11px] font-medium ${colors.text} uppercase`}>
-        {task.status.replace("_", " ")}
-      </div>
-
-      {/* Assigned Staff */}
-      {assignedStaff.length > 0 && (
-        <div className="mt-1 text-[10px] text-gray-500 truncate">
-          {assignedStaff.map((s) => s.name.split(" ")[0]).join(", ")}
+      {/* Guest name if occupied */}
+      {!compact && room.guestName && (
+        <div className="text-[9px] text-gray-500 truncate mt-0.5">
+          {room.guestName}
         </div>
       )}
-
-      {/* Quick Actions */}
-      <div className="mt-2 flex gap-1" onClick={(e) => e.stopPropagation()}>
-        {task.status === "pending" && (
-          <button
-            onClick={() => onStatusUpdate(task.id, "in_progress")}
-            className="flex-1 px-1 py-0.5 bg-blue-600 text-white text-[9px] rounded-sm hover:bg-blue-700"
-          >
-            Start
-          </button>
-        )}
-        {task.status === "assigned" && (
-          <button
-            onClick={() => onStatusUpdate(task.id, "in_progress")}
-            className="flex-1 px-1 py-0.5 bg-blue-600 text-white text-[9px] rounded-sm hover:bg-blue-700"
-          >
-            Start
-          </button>
-        )}
-        {task.status === "in_progress" && (
-          <button
-            onClick={() => onStatusUpdate(task.id, "complete")}
-            className="flex-1 px-1 py-0.5 bg-green-600 text-white text-[9px] rounded-sm hover:bg-green-700"
-          >
-            Done
-          </button>
-        )}
-      </div>
     </div>
   );
 }
 
-// Floor View
-function FloorView({
-  tasksByFloor,
+// Floor Plan View
+function FloorPlanView({
+  rooms,
   selectedRooms,
   onToggleSelection,
-  onStatusUpdate,
-  staff,
+  expandedFloor,
+  onExpandFloor,
 }: {
-  tasksByFloor: Record<number, HousekeepingTask[]>;
+  rooms: Room[];
   selectedRooms: Set<string>;
-  onToggleSelection: (id: string) => void;
-  onStatusUpdate: (id: string, status: string) => void;
-  staff: Housekeeper[];
+  onToggleSelection: (roomNumber: string) => void;
+  expandedFloor: number | null;
+  onExpandFloor: (floor: number | null) => void;
 }) {
-  const floors = Object.keys(tasksByFloor)
-    .map(Number)
-    .sort((a, b) => b - a);
+  const floors = [9, 8, 7, 6, 5, 4, 3, 2]; // Top to bottom
 
   return (
     <div className="divide-y divide-gray-200">
-      {floors.map((floor) => (
-        <div key={floor} className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Building2 size={16} className="text-gray-400" />
-            <span className="text-[14px] font-semibold text-gray-900">Floor {floor}</span>
-            <span className="text-[12px] text-gray-500">
-              ({tasksByFloor[floor].length} rooms)
-            </span>
+      {floors.map((floor) => {
+        const floorRooms = rooms.filter((r) => r.floor === floor);
+        const floorLayout = FLOOR_LAYOUTS[floor];
+        const summary = getFloorSummary(floor);
+        const isExpanded = expandedFloor === floor;
+
+        return (
+          <div key={floor} className="p-4">
+            {/* Floor Header */}
+            <button
+              onClick={() => onExpandFloor(isExpanded ? null : floor)}
+              className="w-full flex items-center justify-between mb-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-sm bg-gray-100 flex items-center justify-center">
+                  <span className="text-[18px] font-bold text-gray-700">{floor}</span>
+                </div>
+                <div className="text-left">
+                  <div className="text-[14px] font-semibold text-gray-900">
+                    {floorLayout?.name || `Floor ${floor}`}
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    {floorLayout?.description || `${floorRooms.length} rooms`}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                {/* Floor Stats */}
+                <div className="flex items-center gap-3 text-[11px]">
+                  <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded">
+                    {summary.clean + summary.inspected} Clean
+                  </span>
+                  <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded">
+                    {summary.dirty} Dirty
+                  </span>
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                    {summary.occupied} Occ
+                  </span>
+                  {summary.vip > 0 && (
+                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded flex items-center gap-1">
+                      <Star size={10} />
+                      {summary.vip} VIP
+                    </span>
+                  )}
+                </div>
+                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+
+            {/* Floor Rooms */}
+            {isExpanded && floorLayout && (
+              <div className="space-y-4 mt-4">
+                {floorLayout.wings.map((wing) => {
+                  const wingRooms = floorRooms.filter((r) =>
+                    wing.rooms.includes(r.roomNumber)
+                  );
+                  return (
+                    <div key={wing.name}>
+                      <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        {wing.name}
+                      </div>
+                      <div className="grid grid-cols-12 gap-2">
+                        {wingRooms.map((room) => (
+                          <RoomTile
+                            key={room.roomNumber}
+                            room={room}
+                            isSelected={selectedRooms.has(room.roomNumber)}
+                            onToggle={() => onToggleSelection(room.roomNumber)}
+                            compact
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Collapsed view - show mini tiles */}
+            {!isExpanded && (
+              <div className="grid grid-cols-24 gap-1">
+                {floorRooms
+                  .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber))
+                  .map((room) => {
+                    const colors = STATUS_COLORS[room.roomStatus];
+                    return (
+                      <div
+                        key={room.roomNumber}
+                        className={`h-6 rounded-sm ${colors.bg} border ${colors.border} flex items-center justify-center cursor-pointer hover:opacity-80`}
+                        onClick={() => onToggleSelection(room.roomNumber)}
+                        title={`${room.roomNumber} - ${room.categoryLabel} - ${room.roomStatus}`}
+                      >
+                        {room.isVip && <Star size={8} className="text-amber-600" />}
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
-          <div className="grid grid-cols-8 gap-2">
-            {tasksByFloor[floor]
-              .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber))
-              .map((task) => (
-                <RoomTile
-                  key={task.id}
-                  task={task}
-                  isSelected={selectedRooms.has(task.id)}
-                  onToggle={() => onToggleSelection(task.id)}
-                  onStatusUpdate={onStatusUpdate}
-                  staff={staff}
-                />
-              ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-// List View (Table)
+// List View
 function ListView({
-  tasks,
+  rooms,
   selectedRooms,
   onToggleSelection,
   onSelectAll,
-  onStatusUpdate,
-  staff,
 }: {
-  tasks: HousekeepingTask[];
+  rooms: Room[];
   selectedRooms: Set<string>;
-  onToggleSelection: (id: string) => void;
+  onToggleSelection: (roomNumber: string) => void;
   onSelectAll: () => void;
-  onStatusUpdate: (id: string, status: string) => void;
-  staff: Housekeeper[];
 }) {
   return (
-    <table className="w-full">
-      <thead className="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th className="px-4 py-3 text-left">
-            <input
-              type="checkbox"
-              checked={selectedRooms.size === tasks.length && tasks.length > 0}
-              onChange={onSelectAll}
-              className="rounded"
-            />
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Room
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Type
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Floor
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Status
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Priority
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Attendant
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Next Arrival
-          </th>
-          <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100">
-        {tasks.map((task) => {
-          const colors = STATUS_COLORS[task.status];
-          const assignedStaff = staff.filter((s) => task.assignedTo?.includes(s.id));
-          return (
-            <tr key={task.id} className="hover:bg-gray-50">
-              <td className="px-4 py-3">
-                <input
-                  type="checkbox"
-                  checked={selectedRooms.has(task.id)}
-                  onChange={() => onToggleSelection(task.id)}
-                  className="rounded"
-                />
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[14px]">{task.roomNumber}</span>
-                  {task.nextGuestVip && (
-                    <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[9px] font-bold rounded-sm">
-                      VIP
+    <div className="overflow-x-auto">
+      <table className="w-full text-[12px]">
+        <thead className="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th className="px-3 py-2 text-left">
+              <input
+                type="checkbox"
+                checked={selectedRooms.size === rooms.length && rooms.length > 0}
+                onChange={onSelectAll}
+                className="rounded"
+              />
+            </th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">Room</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">Floor</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">Type</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">View</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">HK Status</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">FO Status</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">Guest</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">VIP</th>
+            <th className="px-3 py-2 text-left font-semibold text-gray-600">Size</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rooms.map((room) => {
+            const colors = STATUS_COLORS[room.roomStatus];
+            return (
+              <tr key={room.roomNumber} className="hover:bg-gray-50">
+                <td className="px-3 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedRooms.has(room.roomNumber)}
+                    onChange={() => onToggleSelection(room.roomNumber)}
+                    className="rounded"
+                  />
+                </td>
+                <td className="px-3 py-2 font-semibold">{room.roomNumber}</td>
+                <td className="px-3 py-2">{room.floor}</td>
+                <td className="px-3 py-2">{room.categoryLabel}</td>
+                <td className="px-3 py-2 capitalize">{room.view}</td>
+                <td className="px-3 py-2">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium capitalize ${colors.bg} ${colors.text}`}>
+                    {room.roomStatus}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <span className={`capitalize ${FO_STATUS_COLORS[room.foStatus]}`}>
+                    {room.foStatus.replace("_", " ")}
+                  </span>
+                </td>
+                <td className="px-3 py-2">{room.guestName || "-"}</td>
+                <td className="px-3 py-2">
+                  {room.isVip && (
+                    <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-medium">
+                      {room.vipCode}
                     </span>
                   )}
-                </div>
-              </td>
-              <td className="px-4 py-3 text-[13px] text-gray-600 capitalize">{task.roomType}</td>
-              <td className="px-4 py-3 text-[13px] text-gray-600">{task.floor}</td>
-              <td className="px-4 py-3">
-                <span
-                  className={`px-2 py-1 rounded-sm text-[11px] font-medium ${colors.bg} ${colors.text}`}
-                >
-                  {task.status.replace("_", " ").toUpperCase()}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <span
-                  className={`px-2 py-1 rounded-sm text-[11px] font-medium ${
-                    task.priorityLevel === "high"
-                      ? "bg-red-100 text-red-700"
-                      : task.priorityLevel === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {task.priorityLevel.toUpperCase()}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-[13px] text-gray-600">
-                {assignedStaff.length > 0
-                  ? assignedStaff.map((s) => s.name).join(", ")
-                  : "-"}
-              </td>
-              <td className="px-4 py-3 text-[13px] text-gray-600">
-                {task.nextArrival
-                  ? new Date(task.nextArrival).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })
-                  : "-"}
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex gap-1">
-                  {(task.status === "pending" || task.status === "assigned") && (
-                    <button
-                      onClick={() => onStatusUpdate(task.id, "in_progress")}
-                      className="px-2 py-1 bg-blue-600 text-white text-[11px] rounded-sm hover:bg-blue-700"
-                    >
-                      Start
-                    </button>
-                  )}
-                  {task.status === "in_progress" && (
-                    <button
-                      onClick={() => onStatusUpdate(task.id, "complete")}
-                      className="px-2 py-1 bg-green-600 text-white text-[11px] rounded-sm hover:bg-green-700"
-                    >
-                      Complete
-                    </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                </td>
+                <td className="px-3 py-2 text-gray-500">{room.sqm}m²</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
 // Attendant View
 function AttendantView({
-  attendants,
-  onStatusUpdate,
+  staff,
+  rooms,
 }: {
-  attendants: (Housekeeper & { tasks: HousekeepingTask[] })[];
-  onStatusUpdate: (id: string, status: string) => void;
+  staff: HousekeepingStaff[];
+  rooms: Room[];
 }) {
+  const attendants = staff.filter((s) => s.role === "attendant");
+  const supervisors = staff.filter((s) => s.role === "supervisor" || s.role === "inspector");
+
   return (
-    <div className="divide-y divide-gray-200">
-      {attendants.map((attendant) => (
-        <div key={attendant.id} className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                  attendant.status === "available"
-                    ? "bg-green-500"
-                    : attendant.status === "busy"
-                    ? "bg-blue-500"
-                    : "bg-gray-400"
-                }`}
-              >
-                {attendant.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </div>
-              <div>
-                <div className="text-[14px] font-semibold text-gray-900">{attendant.name}</div>
-                <div className="text-[12px] text-gray-500">
-                  Floor {attendant.currentFloor} •{" "}
-                  <span
-                    className={
-                      attendant.status === "available"
-                        ? "text-green-600"
-                        : attendant.status === "busy"
-                        ? "text-blue-600"
-                        : "text-gray-500"
-                    }
-                  >
-                    {attendant.status.charAt(0).toUpperCase() + attendant.status.slice(1)}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[20px] font-semibold text-gray-900">
-                {attendant.tasks.length}
-              </div>
-              <div className="text-[11px] text-gray-500">Assigned Rooms</div>
+    <div className="p-4 space-y-6">
+      {/* Supervisors */}
+      <div>
+        <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Supervisors & Inspectors
+        </h3>
+        <div className="grid grid-cols-4 gap-3">
+          {supervisors.map((person) => (
+            <StaffCard key={person.id} person={person} rooms={rooms} />
+          ))}
+        </div>
+      </div>
+
+      {/* Attendants */}
+      <div>
+        <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Room Attendants
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          {attendants.map((person) => (
+            <AttendantCard key={person.id} person={person} rooms={rooms} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaffCard({ person, rooms }: { person: HousekeepingStaff; rooms: Room[] }) {
+  const statusColors: Record<string, string> = {
+    available: "bg-green-500",
+    busy: "bg-blue-500",
+    break: "bg-yellow-500",
+    off_duty: "bg-gray-400",
+  };
+
+  return (
+    <div className="p-3 border border-gray-200 rounded-sm">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-full ${statusColors[person.status]} flex items-center justify-center text-white font-semibold text-[14px]`}>
+          {person.name.split(" ").map((n) => n[0]).join("")}
+        </div>
+        <div>
+          <div className="text-[13px] font-semibold">{person.name}</div>
+          <div className="text-[11px] text-gray-500 capitalize">
+            {person.role.replace("_", " ")} | Floor {person.currentFloor}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AttendantCard({ person, rooms }: { person: HousekeepingStaff; rooms: Room[] }) {
+  const assignedRooms = rooms.filter((r) => person.assignedRooms.includes(r.roomNumber));
+  const statusColors: Record<string, string> = {
+    available: "bg-green-500",
+    busy: "bg-blue-500",
+    break: "bg-yellow-500",
+    off_duty: "bg-gray-400",
+  };
+
+  return (
+    <div className="p-4 border border-gray-200 rounded-sm">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-full ${statusColors[person.status]} flex items-center justify-center text-white font-semibold`}>
+            {person.name.split(" ").map((n) => n[0]).join("")}
+          </div>
+          <div>
+            <div className="text-[14px] font-semibold">{person.name}</div>
+            <div className="text-[11px] text-gray-500">
+              Floor {person.currentFloor} | {person.shiftStart} - {person.shiftEnd}
             </div>
           </div>
-
-          {attendant.tasks.length > 0 ? (
-            <div className="grid grid-cols-6 gap-2">
-              {attendant.tasks.map((task) => {
-                const colors = STATUS_COLORS[task.status];
-                return (
-                  <div
-                    key={task.id}
-                    className={`rounded-sm border ${colors.border} ${colors.bg} p-2 text-center`}
-                  >
-                    <div className="text-[14px] font-bold text-gray-900">{task.roomNumber}</div>
-                    <div className={`text-[10px] ${colors.text} uppercase`}>
-                      {task.status.replace("_", " ")}
-                    </div>
-                    {task.nextGuestVip && (
-                      <span className="inline-block mt-1 px-1 py-0.5 bg-amber-500 text-white text-[8px] font-bold rounded-sm">
-                        VIP
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-[13px] text-gray-400 italic">No rooms assigned</div>
-          )}
         </div>
-      ))}
+        <div className="text-right">
+          <div className="text-[20px] font-bold">{person.roomsCompleted}</div>
+          <div className="text-[10px] text-gray-500">Completed</div>
+        </div>
+      </div>
+
+      {/* Assigned Rooms */}
+      <div className="text-[11px] text-gray-500 mb-2">
+        Assigned: {person.assignedRooms.length} rooms
+      </div>
+      <div className="grid grid-cols-4 gap-1">
+        {assignedRooms.map((room) => {
+          const colors = STATUS_COLORS[room.roomStatus];
+          return (
+            <div
+              key={room.roomNumber}
+              className={`p-1.5 rounded-sm ${colors.bg} border ${colors.border} text-center`}
+            >
+              <div className="text-[12px] font-bold">{room.roomNumber}</div>
+              {room.isVip && <Star size={10} className="mx-auto text-amber-600" />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Stats */}
+      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px]">
+        <span className="text-gray-500">
+          Avg: {person.avgCleaningTime} min/room
+        </span>
+        <span className={`px-2 py-0.5 rounded capitalize ${
+          person.status === "available" ? "bg-green-100 text-green-700" :
+          person.status === "busy" ? "bg-blue-100 text-blue-700" :
+          "bg-yellow-100 text-yellow-700"
+        }`}>
+          {person.status}
+        </span>
+      </div>
     </div>
   );
 }
