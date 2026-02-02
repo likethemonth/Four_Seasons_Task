@@ -210,11 +210,17 @@ export default function OperaHeader() {
           </button>
 
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/images/four-seasons-logo.svg"
+              alt="Four Seasons"
+              width={32}
+              height={32}
+              className="brightness-0 invert"
+            />
             <span className="text-[15px] font-semibold text-white tracking-wide">
               FOUR SEASONS
             </span>
-            <span className="text-[12px] text-gray-400">Hospitality</span>
           </div>
         </div>
 
@@ -258,16 +264,9 @@ export default function OperaHeader() {
         </div>
       </header>
 
-      {/* Navigation Bar - Teal */}
-      <nav className="fixed top-12 left-0 right-0 z-40 flex h-10 items-center bg-[#0d9488] px-4" ref={dropdownRef}>
+      {/* Navigation Bar - Black */}
+      <nav className="fixed top-12 left-0 right-0 z-40 flex h-10 items-center bg-[#2a2a2a] px-4" ref={dropdownRef}>
         <div className="flex items-center gap-1">
-          {/* OPERA Cloud Logo */}
-          <div className="flex items-center gap-2 mr-4">
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-              <span className="text-[10px] font-bold text-[#0d9488]">FS</span>
-            </div>
-            <span className="text-[13px] font-semibold text-white">OPERA Cloud</span>
-          </div>
 
           {/* Navigation Dropdowns */}
           {navDropdowns.map((dropdown) => (
@@ -276,8 +275,8 @@ export default function OperaHeader() {
                 onClick={() =>
                   setActiveDropdown(activeDropdown === dropdown.label ? null : dropdown.label)
                 }
-                className={`flex items-center gap-1 px-3 py-1.5 text-[13px] text-white hover:bg-[#0f766e] rounded transition-colors ${
-                  activeDropdown === dropdown.label ? "bg-[#0f766e]" : ""
+                className={`flex items-center gap-1 px-3 py-1.5 text-[13px] text-white hover:bg-[#3a3a3a] rounded transition-colors ${
+                  activeDropdown === dropdown.label ? "bg-[#3a3a3a]" : ""
                 }`}
               >
                 {dropdown.label}
@@ -305,13 +304,13 @@ export default function OperaHeader() {
 
         {/* Right side icons */}
         <div className="ml-auto flex items-center gap-2">
-          <button className="p-1.5 hover:bg-[#0f766e] rounded transition-colors">
+          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
             <Search size={18} className="text-white" />
           </button>
-          <button className="p-1.5 hover:bg-[#0f766e] rounded transition-colors">
+          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
             <Bell size={18} className="text-white" />
           </button>
-          <button className="p-1.5 hover:bg-[#0f766e] rounded transition-colors">
+          <button className="p-1.5 hover:bg-[#3a3a3a] rounded transition-colors">
             <MessageSquare size={18} className="text-white" />
           </button>
         </div>
