@@ -214,11 +214,11 @@ export default function OperaHeader() {
             <Image
               src="/images/four-seasons-logo.svg"
               alt="Four Seasons"
-              width={32}
-              height={32}
+              width={44}
+              height={44}
               className="brightness-0 invert"
             />
-            <span className="text-[15px] font-semibold text-white tracking-wide">
+            <span className="font-display text-[18px] font-medium text-white tracking-[0.15em]">
               FOUR SEASONS
             </span>
           </div>
