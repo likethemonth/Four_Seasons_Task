@@ -191,7 +191,7 @@ export default function HousekeepingBoard() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowAIOptimization(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-sm text-[13px] font-medium transition-all bg-[#1a1a1a] text-white hover:bg-[#2a2a2a] shadow-sm"
           >
             <Sparkles size={16} />
             AI Optimize

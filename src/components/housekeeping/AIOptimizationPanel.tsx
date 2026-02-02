@@ -1,356 +1,476 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
-  TrendingDown,
   Clock,
-  Route,
-  Zap,
-  DollarSign,
   CheckCircle2,
   Play,
-  RotateCcw,
+  ArrowRight,
+  Star,
+  User,
+  AlertTriangle,
+  Building2,
+  Timer,
+  Users,
+  ChevronRight,
 } from "lucide-react";
 
-interface Room {
+// Types
+interface HousekeeperAssignment {
   id: string;
-  x: number;
-  y: number;
-  status: "dirty" | "clean" | "in_progress";
-  priority: number;
+  name: string;
+  initials: string;
   floor: number;
+  rooms: RoomTask[];
+  totalTime: number;
+  floorChanges: number;
 }
 
-interface OptimizationStats {
-  distanceSaved: number;
-  timeSaved: number;
-  costSaved: number;
-  efficiencyGain: number;
+interface RoomTask {
+  roomNumber: string;
+  floor: number;
+  type: "suite" | "deluxe" | "premier" | "superior";
+  priority: "critical" | "high" | "medium";
+  priorityReason: string;
+  isVip: boolean;
+  arrivalTime?: string;
+  cleaningTime: number;
 }
 
+// Mock data based on Park Lane
 const FLOORS = [
-  { floor: 9, label: "Floor 9 - Penthouse", rooms: 6 },
-  { floor: 8, label: "Floor 8 - Executive", rooms: 12 },
-  { floor: 7, label: "Floor 7 - Premier", rooms: 16 },
-  { floor: 6, label: "Floor 6 - Deluxe", rooms: 18 },
-  { floor: 5, label: "Floor 5 - Superior", rooms: 18 },
+  { floor: 9, name: "Penthouse Level", rooms: 4, suites: 4 },
+  { floor: 8, name: "Executive Level", rooms: 8, suites: 2 },
+  { floor: 7, name: "Premier Level", rooms: 12, suites: 1 },
+  { floor: 6, name: "Deluxe Level", rooms: 14, suites: 0 },
+  { floor: 5, name: "Superior Level", rooms: 14, suites: 0 },
+  { floor: 4, name: "Superior Level", rooms: 14, suites: 0 },
 ];
+
+const HOUSEKEEPERS = [
+  { id: "hk1", name: "Maria Santos", initials: "MS" },
+  { id: "hk2", name: "Jun Park", initials: "JP" },
+  { id: "hk3", name: "Elena Volkov", initials: "EV" },
+  { id: "hk4", name: "David Chen", initials: "DC" },
+];
+
+// Generate realistic room tasks
+function generateRoomTasks(): RoomTask[] {
+  const tasks: RoomTask[] = [
+    // Floor 9 - Penthouse (all suites, high priority)
+    { roomNumber: "901", floor: 9, type: "suite", priority: "critical", priorityReason: "VIP arriving 2:00 PM", isVip: true, arrivalTime: "14:00", cleaningTime: 45 },
+    { roomNumber: "902", floor: 9, type: "suite", priority: "high", priorityReason: "Suite - priority clean", isVip: false, cleaningTime: 45 },
+    // Floor 8
+    { roomNumber: "801", floor: 8, type: "suite", priority: "critical", priorityReason: "VIP arriving 1:30 PM", isVip: true, arrivalTime: "13:30", cleaningTime: 45 },
+    { roomNumber: "805", floor: 8, type: "deluxe", priority: "high", priorityReason: "Early arrival 2:00 PM", isVip: false, arrivalTime: "14:00", cleaningTime: 30 },
+    { roomNumber: "807", floor: 8, type: "deluxe", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 30 },
+    { roomNumber: "808", floor: 8, type: "deluxe", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 30 },
+    // Floor 7
+    { roomNumber: "702", floor: 7, type: "premier", priority: "high", priorityReason: "VIP arriving 3:00 PM", isVip: true, arrivalTime: "15:00", cleaningTime: 35 },
+    { roomNumber: "705", floor: 7, type: "premier", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 35 },
+    { roomNumber: "708", floor: 7, type: "premier", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 35 },
+    { roomNumber: "711", floor: 7, type: "premier", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 35 },
+    // Floor 6
+    { roomNumber: "603", floor: 6, type: "deluxe", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 30 },
+    { roomNumber: "606", floor: 6, type: "deluxe", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 30 },
+    { roomNumber: "609", floor: 6, type: "deluxe", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 30 },
+    { roomNumber: "612", floor: 6, type: "deluxe", priority: "high", priorityReason: "Early arrival 2:30 PM", isVip: false, arrivalTime: "14:30", cleaningTime: 30 },
+    // Floor 5
+    { roomNumber: "502", floor: 5, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    { roomNumber: "505", floor: 5, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    { roomNumber: "508", floor: 5, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    { roomNumber: "511", floor: 5, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    // Floor 4
+    { roomNumber: "403", floor: 4, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    { roomNumber: "406", floor: 4, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+    { roomNumber: "409", floor: 4, type: "superior", priority: "high", priorityReason: "Early arrival 1:00 PM", isVip: false, arrivalTime: "13:00", cleaningTime: 25 },
+    { roomNumber: "412", floor: 4, type: "superior", priority: "medium", priorityReason: "Standard checkout", isVip: false, cleaningTime: 25 },
+  ];
+  return tasks;
+}
+
+// Manual (inefficient) assignment - staff jumping between floors
+function generateManualAssignment(tasks: RoomTask[]): HousekeeperAssignment[] {
+  const assignments: HousekeeperAssignment[] = HOUSEKEEPERS.map((hk, idx) => ({
+    id: hk.id,
+    name: hk.name,
+    initials: hk.initials,
+    floor: 0,
+    rooms: [],
+    totalTime: 0,
+    floorChanges: 0,
+  }));
+
+  // Distribute rooms round-robin (inefficient - causes floor jumping)
+  tasks.forEach((task, idx) => {
+    const assignee = assignments[idx % 4];
+    assignee.rooms.push(task);
+  });
+
+  // Calculate floor changes and time
+  assignments.forEach((a) => {
+    let lastFloor = -1;
+    a.rooms.forEach((room) => {
+      if (lastFloor !== -1 && lastFloor !== room.floor) {
+        a.floorChanges++;
+      }
+      lastFloor = room.floor;
+      a.totalTime += room.cleaningTime;
+    });
+    // Add 10 min per floor change
+    a.totalTime += a.floorChanges * 10;
+    a.floor = a.rooms[0]?.floor || 0;
+  });
+
+  return assignments;
+}
+
+// Optimized assignment - staff stay on same/adjacent floors
+function generateOptimizedAssignment(tasks: RoomTask[]): HousekeeperAssignment[] {
+  const assignments: HousekeeperAssignment[] = HOUSEKEEPERS.map((hk, idx) => ({
+    id: hk.id,
+    name: hk.name,
+    initials: hk.initials,
+    floor: 0,
+    rooms: [],
+    totalTime: 0,
+    floorChanges: 0,
+  }));
+
+  // Sort tasks by floor and priority
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.floor !== b.floor) return b.floor - a.floor; // Top floors first
+    const priorityOrder = { critical: 0, high: 1, medium: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
+
+  // Assign by floor zones
+  // Maria: Floor 9 + 8 (suites/executive)
+  // Jun: Floor 7 (premier)
+  // Elena: Floor 6 (deluxe)
+  // David: Floor 5 + 4 (superior)
+  const floorAssignments: Record<number, number> = {
+    9: 0, 8: 0, 7: 1, 6: 2, 5: 3, 4: 3,
+  };
+
+  sortedTasks.forEach((task) => {
+    const assigneeIdx = floorAssignments[task.floor] ?? 0;
+    assignments[assigneeIdx].rooms.push(task);
+  });
+
+  // Calculate time (minimal floor changes)
+  assignments.forEach((a) => {
+    let lastFloor = -1;
+    a.rooms.forEach((room) => {
+      if (lastFloor !== -1 && lastFloor !== room.floor) {
+        a.floorChanges++;
+      }
+      lastFloor = room.floor;
+      a.totalTime += room.cleaningTime;
+    });
+    a.totalTime += a.floorChanges * 10;
+    a.floor = a.rooms[0]?.floor || 0;
+  });
+
+  return assignments;
+}
 
 export default function AIOptimizationPanel({ onClose }: { onClose: () => void }) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationComplete, setOptimizationComplete] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [activeRoute, setActiveRoute] = useState<number[]>([]);
-  const [stats, setStats] = useState<OptimizationStats>({
-    distanceSaved: 0,
-    timeSaved: 0,
-    costSaved: 0,
-    efficiencyGain: 0,
-  });
+  const [showOptimized, setShowOptimized] = useState(false);
 
-  // Generate rooms for visualization
-  const generateRooms = useCallback((floor: number, count: number): Room[] => {
-    const rooms: Room[] = [];
-    const cols = Math.min(count, 6);
+  const tasks = generateRoomTasks();
+  const manualAssignments = generateManualAssignment(tasks);
+  const optimizedAssignments = generateOptimizedAssignment(tasks);
 
-    for (let i = 0; i < count; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      rooms.push({
-        id: `${floor}${String(i + 1).padStart(2, "0")}`,
-        x: 60 + col * 80,
-        y: 40 + row * 50,
-        status: Math.random() > 0.6 ? "dirty" : "clean",
-        priority: Math.floor(Math.random() * 3) + 1,
-        floor,
-      });
-    }
-    return rooms;
-  }, []);
+  // Calculate totals
+  const manualTotal = {
+    time: manualAssignments.reduce((sum, a) => sum + a.totalTime, 0),
+    floorChanges: manualAssignments.reduce((sum, a) => sum + a.floorChanges, 0),
+  };
+  const optimizedTotal = {
+    time: optimizedAssignments.reduce((sum, a) => sum + a.totalTime, 0),
+    floorChanges: optimizedAssignments.reduce((sum, a) => sum + a.floorChanges, 0),
+  };
 
-  const [floorRooms] = useState(() =>
-    FLOORS.reduce((acc, f) => {
-      acc[f.floor] = generateRooms(f.floor, f.rooms);
-      return acc;
-    }, {} as Record<number, Room[]>)
-  );
-
-  const [selectedFloor, setSelectedFloor] = useState(7);
+  const timeSaved = manualTotal.time - optimizedTotal.time;
+  const floorChangesSaved = manualTotal.floorChanges - optimizedTotal.floorChanges;
 
   const runOptimization = () => {
     setIsOptimizing(true);
     setOptimizationComplete(false);
     setCurrentStep(0);
-    setActiveRoute([]);
+    setShowOptimized(false);
 
-    // Simulate optimization steps
-    const steps = [
-      { step: 1, duration: 800 },
-      { step: 2, duration: 1000 },
-      { step: 3, duration: 600 },
-      { step: 4, duration: 900 },
-      { step: 5, duration: 700 },
-    ];
-
-    let totalDelay = 0;
-    steps.forEach((s) => {
-      setTimeout(() => {
-        setCurrentStep(s.step);
-      }, totalDelay);
-      totalDelay += s.duration;
+    const steps = [600, 800, 700, 600, 500];
+    let delay = 0;
+    steps.forEach((duration, idx) => {
+      setTimeout(() => setCurrentStep(idx + 1), delay);
+      delay += duration;
     });
 
-    // Show route animation
-    setTimeout(() => {
-      const dirtyRooms = floorRooms[selectedFloor]
-        .map((r, i) => (r.status === "dirty" ? i : -1))
-        .filter((i) => i !== -1);
-
-      // Animate route discovery
-      dirtyRooms.forEach((roomIdx, i) => {
-        setTimeout(() => {
-          setActiveRoute((prev) => [...prev, roomIdx]);
-        }, i * 300);
-      });
-    }, totalDelay);
-
-    // Complete optimization
     setTimeout(() => {
       setIsOptimizing(false);
       setOptimizationComplete(true);
-      setStats({
-        distanceSaved: 847,
-        timeSaved: 42,
-        costSaved: 156,
-        efficiencyGain: 23,
-      });
-    }, totalDelay + 2000);
+      setShowOptimized(true);
+    }, delay + 300);
   };
 
-  const resetOptimization = () => {
-    setOptimizationComplete(false);
-    setCurrentStep(0);
-    setActiveRoute([]);
-    setStats({
-      distanceSaved: 0,
-      timeSaved: 0,
-      costSaved: 0,
-      efficiencyGain: 0,
-    });
-  };
-
-  const rooms = floorRooms[selectedFloor] || [];
+  const activeAssignments = showOptimized ? optimizedAssignments : manualAssignments;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-sm shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-sm shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-gray-200">
         {/* Header */}
         <div className="bg-[#1a1a1a] text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-semibold">Route Optimization</h2>
-            <p className="text-gray-400 text-[12px]">Intelligent task queuing for maximum efficiency</p>
+            <h2 className="text-[16px] font-semibold">Housekeeping Queue Optimization</h2>
+            <p className="text-gray-400 text-[12px]">Floor-based staff allocation to minimize elevator travel</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-700 rounded transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
-          <div className="grid grid-cols-3 gap-6">
-            {/* Left Panel - Floor Plan Visualization */}
-            <div className="col-span-2">
-              {/* Floor Selector */}
-              <div className="flex gap-2 mb-4">
-                {FLOORS.map((f) => (
-                  <button
-                    key={f.floor}
-                    onClick={() => {
-                      setSelectedFloor(f.floor);
-                      resetOptimization();
-                    }}
-                    className={`px-3 py-1.5 text-[12px] font-medium rounded-sm transition-all border ${
-                      selectedFloor === f.floor
-                        ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    Floor {f.floor}
-                  </button>
-                ))}
-              </div>
-
-              {/* Floor Plan SVG */}
-              <div className="bg-gray-50 rounded-sm border border-gray-200 p-4 relative overflow-hidden">
-                <div className="absolute top-2 left-2 text-[11px] text-gray-500 font-medium">
-                  {FLOORS.find((f) => f.floor === selectedFloor)?.label}
-                </div>
-
-                <svg viewBox="0 0 560 200" className="w-full h-auto">
-                  {/* Corridor */}
-                  <rect
-                    x="30"
-                    y="85"
-                    width="500"
-                    height="30"
-                    fill="#f9fafb"
-                    stroke="#e5e7eb"
-                    strokeWidth="1"
-                  />
-                  <text x="280" y="104" textAnchor="middle" className="text-[10px] fill-gray-400">
-                    CORRIDOR
-                  </text>
-
-                  {/* Elevator */}
-                  <rect
-                    x="10"
-                    y="75"
-                    width="20"
-                    height="50"
-                    fill="#6b7280"
-                    rx="2"
-                  />
-                  <text x="20" y="105" textAnchor="middle" className="text-[8px] fill-white font-medium">
-                    ELV
-                  </text>
-
-                  {/* Rooms */}
-                  {rooms.map((room, idx) => {
-                    const isInRoute = activeRoute.includes(idx);
-                    const routeOrder = activeRoute.indexOf(idx);
-                    const yOffset = idx < rooms.length / 2 ? 0 : 70;
-                    const adjustedY = yOffset === 0 ? room.y - 30 : room.y + 60;
-
-                    return (
-                      <g key={room.id}>
-                        {/* Room Rectangle */}
-                        <rect
-                          x={room.x}
-                          y={adjustedY}
-                          width="60"
-                          height="40"
-                          rx="2"
-                          fill={
-                            room.status === "dirty"
-                              ? isInRoute
-                                ? "#fef9c3"
-                                : "#fef2f2"
-                              : "#f0fdf4"
-                          }
-                          stroke={
-                            room.status === "dirty"
-                              ? isInRoute
-                                ? "#ca8a04"
-                                : "#dc2626"
-                              : "#16a34a"
-                          }
-                          strokeWidth={isInRoute ? "2" : "1"}
-                          className="transition-all duration-300"
-                        />
-
-                        {/* Room Number */}
-                        <text
-                          x={room.x + 30}
-                          y={adjustedY + 18}
-                          textAnchor="middle"
-                          className="text-[11px] font-semibold fill-gray-800"
-                        >
-                          {room.id}
-                        </text>
-
-                        {/* Status Label */}
-                        <text
-                          x={room.x + 30}
-                          y={adjustedY + 32}
-                          textAnchor="middle"
-                          className={`text-[8px] font-medium ${
-                            room.status === "dirty" ? "fill-red-600" : "fill-green-600"
-                          }`}
-                        >
-                          {room.status.toUpperCase()}
-                        </text>
-
-                        {/* Route Order Badge */}
-                        {isInRoute && (
-                          <g>
-                            <circle
-                              cx={room.x + 55}
-                              cy={adjustedY + 5}
-                              r="10"
-                              fill="#1a1a1a"
-                            />
-                            <text
-                              x={room.x + 55}
-                              y={adjustedY + 9}
-                              textAnchor="middle"
-                              className="text-[9px] font-bold fill-white"
-                            >
-                              {routeOrder + 1}
-                            </text>
-                          </g>
-                        )}
-                      </g>
-                    );
-                  })}
-
-                  {/* Route Lines */}
-                  {activeRoute.length > 1 && (
-                    <g>
-                      {activeRoute.slice(0, -1).map((fromIdx, i) => {
-                        const toIdx = activeRoute[i + 1];
-                        const fromRoom = rooms[fromIdx];
-                        const toRoom = rooms[toIdx];
-                        const fromYOffset = fromIdx < rooms.length / 2 ? 0 : 70;
-                        const toYOffset = toIdx < rooms.length / 2 ? 0 : 70;
-                        const fromY = fromYOffset === 0 ? fromRoom.y - 10 : fromRoom.y + 80;
-                        const toY = toYOffset === 0 ? toRoom.y - 10 : toRoom.y + 80;
-
-                        return (
-                          <line
-                            key={`route-${i}`}
-                            x1={fromRoom.x + 30}
-                            y1={fromY}
-                            x2={toRoom.x + 30}
-                            y2={toY}
-                            stroke="#1a1a1a"
-                            strokeWidth="2"
-                            strokeDasharray="5,5"
-                            className="animate-pulse"
-                          />
-                        );
-                      })}
-                    </g>
-                  )}
-                </svg>
-
-                {/* Legend */}
-                <div className="flex items-center justify-center gap-6 mt-4 text-[11px] text-gray-600">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-sm bg-green-50 border border-green-600" />
-                    Clean
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-sm bg-red-50 border border-red-600" />
-                    Needs Cleaning
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-sm bg-yellow-100 border-2 border-yellow-600" />
-                    In Route
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-[#1a1a1a] text-white text-[8px] flex items-center justify-center font-bold">1</span>
-                    Order
-                  </span>
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          {/* Problem Statement */}
+          <div className="bg-amber-50 border border-amber-200 rounded-sm p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="text-[13px] font-semibold text-amber-800">The Elevator Problem</div>
+                <div className="text-[12px] text-amber-700 mt-1">
+                  Each floor change costs ~10 minutes in elevator wait time. Manual dispatch often sends staff to different floors,
+                  wasting up to 40+ minutes per shift. Optimized routing keeps staff on same floors.
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Right Panel - Controls & Stats */}
-            <div className="space-y-4">
-              {/* Optimization Button */}
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left: Building Visualization */}
+            <div className="col-span-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[13px] font-semibold text-gray-700 flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Staff Assignments by Floor
+                </h3>
+                {optimizationComplete && (
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <button
+                      onClick={() => setShowOptimized(false)}
+                      className={`px-2 py-1 rounded-sm ${!showOptimized ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      Before
+                    </button>
+                    <button
+                      onClick={() => setShowOptimized(true)}
+                      className={`px-2 py-1 rounded-sm ${showOptimized ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      After
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Building Stack */}
+              <div className="border border-gray-200 rounded-sm overflow-hidden">
+                {FLOORS.map((floor, idx) => {
+                  const floorTasks = tasks.filter((t) => t.floor === floor.floor);
+                  const assignedStaff = activeAssignments.filter((a) =>
+                    a.rooms.some((r) => r.floor === floor.floor)
+                  );
+
+                  return (
+                    <div
+                      key={floor.floor}
+                      className={`border-b border-gray-200 last:border-b-0 ${
+                        floor.suites > 0 ? "bg-amber-50/50" : "bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 px-4 py-3">
+                        {/* Floor Number */}
+                        <div className="w-10 h-10 rounded-sm bg-gray-100 flex items-center justify-center shrink-0">
+                          <span className="text-[16px] font-bold text-gray-700">{floor.floor}</span>
+                        </div>
+
+                        {/* Floor Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-medium text-gray-800">{floor.name}</div>
+                          <div className="text-[10px] text-gray-500">
+                            {floorTasks.length} rooms to clean
+                            {floor.suites > 0 && (
+                              <span className="ml-2 text-amber-600">• {floor.suites} suites</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Assigned Staff */}
+                        <div className="flex items-center gap-1">
+                          {assignedStaff.map((staff) => (
+                            <div
+                              key={staff.id}
+                              className="w-7 h-7 rounded-full bg-[#1a1a1a] text-white text-[10px] font-medium flex items-center justify-center"
+                              title={staff.name}
+                            >
+                              {staff.initials}
+                            </div>
+                          ))}
+                          {assignedStaff.length === 0 && (
+                            <span className="text-[10px] text-gray-400">No staff</span>
+                          )}
+                        </div>
+
+                        {/* Room Count Badge */}
+                        <div className={`px-2 py-1 rounded-sm text-[10px] font-medium ${
+                          floorTasks.some((t) => t.priority === "critical")
+                            ? "bg-red-100 text-red-700"
+                            : floorTasks.some((t) => t.priority === "high")
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}>
+                          {floorTasks.length}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Elevator indicator */}
+                <div className="bg-gray-100 px-4 py-2 flex items-center justify-center gap-2 text-[11px] text-gray-600">
+                  <Timer className="w-3.5 h-3.5" />
+                  <span>Elevator wait: ~10 min per floor change</span>
+                </div>
+              </div>
+
+              {/* Staff Summary Cards */}
+              <div className="mt-4 space-y-2">
+                <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Staff Workload</h4>
+                {activeAssignments.map((staff) => (
+                  <div key={staff.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-sm border border-gray-200">
+                    <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white text-[11px] font-medium flex items-center justify-center">
+                      {staff.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-medium text-gray-800">{staff.name}</div>
+                      <div className="text-[10px] text-gray-500">
+                        {staff.rooms.length} rooms • Floor{staff.rooms.length > 0 && staff.rooms.map(r => r.floor).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => b - a).join(", ")}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[12px] font-semibold text-gray-800">{staff.totalTime} min</div>
+                      {staff.floorChanges > 0 && (
+                        <div className="text-[10px] text-red-600">
+                          +{staff.floorChanges * 10} min travel
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle: Priority Queue */}
+            <div className="col-span-4">
+              <h3 className="text-[13px] font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Cleaning Priority Queue
+              </h3>
+
+              <div className="border border-gray-200 rounded-sm divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                {[...tasks]
+                  .sort((a, b) => {
+                    const order = { critical: 0, high: 1, medium: 2 };
+                    if (order[a.priority] !== order[b.priority]) {
+                      return order[a.priority] - order[b.priority];
+                    }
+                    return b.floor - a.floor;
+                  })
+                  .map((task, idx) => (
+                    <div key={task.roomNumber} className="p-3 hover:bg-gray-50">
+                      <div className="flex items-start gap-3">
+                        {/* Queue Position */}
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                          task.priority === "critical"
+                            ? "bg-red-100 text-red-700"
+                            : task.priority === "high"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}>
+                          {idx + 1}
+                        </div>
+
+                        {/* Room Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[13px] font-semibold text-gray-800">
+                              {task.roomNumber}
+                            </span>
+                            {task.isVip && (
+                              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            )}
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium uppercase ${
+                              task.type === "suite"
+                                ? "bg-amber-100 text-amber-700"
+                                : task.type === "deluxe"
+                                ? "bg-blue-100 text-blue-700"
+                                : task.type === "premier"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}>
+                              {task.type}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-gray-500 mt-0.5">
+                            Floor {task.floor} • {task.cleaningTime} min
+                          </div>
+                        </div>
+
+                        {/* Priority Reason */}
+                        <div className="text-right shrink-0">
+                          <div className={`text-[10px] font-medium ${
+                            task.priority === "critical"
+                              ? "text-red-600"
+                              : task.priority === "high"
+                              ? "text-amber-600"
+                              : "text-gray-500"
+                          }`}>
+                            {task.priorityReason}
+                          </div>
+                          {task.arrivalTime && (
+                            <div className="text-[10px] text-gray-400 mt-0.5">
+                              Arrival: {task.arrivalTime}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Priority Legend */}
+              <div className="mt-3 flex items-center gap-4 text-[10px] text-gray-500">
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-red-100 border border-red-300" />
+                  Critical
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300" />
+                  High
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-300" />
+                  Medium
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Controls & Stats */}
+            <div className="col-span-3 space-y-4">
+              {/* Run Optimization */}
               <div className="bg-gray-50 rounded-sm p-4 border border-gray-200">
                 {!isOptimizing && !optimizationComplete && (
                   <button
@@ -369,27 +489,27 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                       <span className="text-[13px] font-medium text-gray-700">Optimizing...</span>
                     </div>
                     <div className="space-y-2">
-                      {[1, 2, 3, 4, 5].map((step) => (
+                      {[
+                        "Analyzing checkout queue",
+                        "Checking arrival times",
+                        "Mapping staff locations",
+                        "Calculating floor zones",
+                        "Minimizing elevator trips",
+                      ].map((step, idx) => (
                         <div
-                          key={step}
+                          key={idx}
                           className={`flex items-center gap-2 text-[11px] transition-all ${
-                            currentStep >= step ? "text-gray-800" : "text-gray-400"
+                            currentStep > idx + 1 ? "text-gray-800" : currentStep === idx + 1 ? "text-gray-700" : "text-gray-400"
                           }`}
                         >
-                          {currentStep > step ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          ) : currentStep === step ? (
-                            <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                          {currentStep > idx + 1 ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                          ) : currentStep === idx + 1 ? (
+                            <div className="w-3.5 h-3.5 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <div className="w-4 h-4 rounded-full border border-gray-300" />
+                            <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />
                           )}
-                          <span>
-                            {step === 1 && "Analyzing room states"}
-                            {step === 2 && "Calculating optimal routes"}
-                            {step === 3 && "Prioritizing VIP arrivals"}
-                            {step === 4 && "Minimizing travel distance"}
-                            {step === 5 && "Generating assignment plan"}
-                          </span>
+                          <span>{step}</span>
                         </div>
                       ))}
                     </div>
@@ -402,69 +522,65 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                       <CheckCircle2 className="w-5 h-5" />
                       <span className="font-medium text-[13px]">Optimization Complete</span>
                     </div>
-                    <button
-                      onClick={resetOptimization}
-                      className="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-sm text-[12px] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      Reset
-                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Savings Stats */}
-              <div className="bg-white rounded-sm border border-gray-200 divide-y divide-gray-100">
-                <div className="p-4">
-                  <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <TrendingDown className="w-4 h-4 text-green-600" />
-                    Projected Savings
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <StatBox
-                      icon={<Route className="w-4 h-4" />}
-                      label="Distance"
-                      value={`${stats.distanceSaved}m`}
-                    />
-                    <StatBox
-                      icon={<Clock className="w-4 h-4" />}
-                      label="Time"
-                      value={`${stats.timeSaved} min`}
-                    />
-                    <StatBox
-                      icon={<DollarSign className="w-4 h-4" />}
-                      label="Cost"
-                      value={`$${stats.costSaved}`}
-                    />
-                    <StatBox
-                      icon={<Zap className="w-4 h-4" />}
-                      label="Efficiency"
-                      value={`+${stats.efficiencyGain}%`}
-                    />
-                  </div>
+              {/* Comparison Stats */}
+              <div className="bg-white rounded-sm border border-gray-200">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Comparison</h4>
                 </div>
 
-                {/* How It Works */}
-                <div className="p-4">
-                  <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3">How It Works</h3>
-                  <div className="space-y-2 text-[11px] text-gray-600">
-                    <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">1</span>
-                      <span>Analyzes all room states, VIP arrivals, and checkout times</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">2</span>
-                      <span>Calculates shortest path using traveling salesman algorithm</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">3</span>
-                      <span>Assigns rooms to attendants based on proximity and workload</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[10px] font-semibold shrink-0 border border-gray-200">4</span>
-                      <span>Reduces walking time by up to 40%, saving labor costs</span>
+                <div className="divide-y divide-gray-100">
+                  {/* Floor Changes */}
+                  <div className="p-4">
+                    <div className="text-[11px] text-gray-500 mb-2">Floor Changes</div>
+                    <div className="flex items-center gap-2">
+                      <div className={`flex-1 text-center p-2 rounded-sm ${!showOptimized ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
+                        <div className="text-[18px] font-bold text-gray-800">{manualTotal.floorChanges}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Manual</div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-gray-400" />
+                      <div className={`flex-1 text-center p-2 rounded-sm ${showOptimized ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
+                        <div className="text-[18px] font-bold text-gray-800">{optimizedTotal.floorChanges}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Optimized</div>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Total Time */}
+                  <div className="p-4">
+                    <div className="text-[11px] text-gray-500 mb-2">Total Time</div>
+                    <div className="flex items-center gap-2">
+                      <div className={`flex-1 text-center p-2 rounded-sm ${!showOptimized ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"}`}>
+                        <div className="text-[18px] font-bold text-gray-800">{manualTotal.time}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Minutes</div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-gray-400" />
+                      <div className={`flex-1 text-center p-2 rounded-sm ${showOptimized ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
+                        <div className="text-[18px] font-bold text-gray-800">{optimizedTotal.time}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Minutes</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Savings */}
+                  {optimizationComplete && (
+                    <div className="p-4 bg-green-50">
+                      <div className="text-[11px] text-green-700 font-medium mb-2">Savings</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="text-center">
+                          <div className="text-[20px] font-bold text-green-700">-{floorChangesSaved}</div>
+                          <div className="text-[9px] text-green-600 uppercase">Floor Changes</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[20px] font-bold text-green-700">-{timeSaved}</div>
+                          <div className="text-[9px] text-green-600 uppercase">Minutes</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -474,34 +590,22 @@ export default function AIOptimizationPanel({ onClose }: { onClose: () => void }
                   onClick={onClose}
                   className="w-full bg-[#2E7D32] text-white py-3 px-4 rounded-sm text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#256025] transition-all"
                 >
-                  <CheckCircle2 className="w-5 h-5" />
-                  Apply Optimized Route
+                  <CheckCircle2 className="w-4 h-4" />
+                  Apply Assignments
                 </button>
               )}
+
+              {/* Key Insight */}
+              <div className="p-3 bg-gray-50 rounded-sm border border-gray-200">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Key Insight</div>
+                <div className="text-[11px] text-gray-700">
+                  Staff assigned to floor zones instead of random rooms. Suites and VIP arrivals prioritized automatically.
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatBox({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="p-3 rounded-sm border border-gray-200 bg-gray-50">
-      <div className="flex items-center gap-1.5 mb-1 text-gray-500">
-        {icon}
-        <span className="text-[10px] uppercase tracking-wide font-medium">{label}</span>
-      </div>
-      <div className="text-[18px] font-semibold text-gray-900">{value}</div>
     </div>
   );
 }
