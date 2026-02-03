@@ -16,7 +16,7 @@ export default function Header() {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/brand-logo.svg" alt="Four Seasons" className="h-16 w-auto" />
+          <img src="/images/brand-logo.svg" alt="Four Seasons" className="h-24 w-auto" />
         </div>
         <div className="ml-4 border-l border-gray-600 pl-6">
           <span className="text-[15px] font-semibold tracking-wider text-white uppercase">

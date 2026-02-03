@@ -195,7 +195,7 @@ export default function OperaHeader() {
   return (
     <>
       {/* Combined Header Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black">
         {/* Top Row - Logo, Title, Date, User */}
         <div className="flex h-14 items-center justify-between px-6 border-b border-gray-800">
           <div className="flex items-center gap-5">
@@ -212,12 +212,12 @@ export default function OperaHeader() {
             </button>
 
             {/* Logo and Title */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Image
                 src="/images/four-seasons-logo.png"
                 alt="Four Seasons"
-                width={40}
-                height={40}
+                width={80}
+                height={80}
               />
               <span className="font-display text-[20px] font-normal text-white tracking-[0.2em]">
                 FOUR SEASONS
